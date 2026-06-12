@@ -149,9 +149,16 @@ Together, these parameters define the **viewpoint**, **orientation**, and **proj
 ##  AI / Computer Vision Discussion
 
 The project is exploring various avenues for semantic classification:
-* **YOLO** (You Only Look Once) for object detection.
+* **Grounded SAM** (Grounding DINO + SAM) — primary candidate for open-vocabulary segmentation from text prompts (e.g. `"road"`, `"building"`). Outputs pixel-level masks. Runs locally.
+* **YOLO-World** — open-vocabulary YOLO that accepts text class prompts; fast alternative to Grounded SAM.
+* **Classic YOLO** — fixed-class detection (road, building, tree); simplest option for the MWE.
 * **OpenCV** for traditional image processing/thresholding.
-* **Local LLMs** / Multimodal models (e.g., Llama-3-Vision).
+
+> [!IMPORTANT]
+> **Clarification on Llama / Multimodal LLMs:**
+> Llama (including Llama 3.2 Vision) is a *generative vision-language model* — it outputs text, not pixel-level segmentation masks. It **cannot** serve as the segmentation engine for this pipeline. The pipeline requires pixel-level masks to backproject classifications into 3D; Llama cannot produce these.
+>
+> Llama's correct role is as an **orchestration / NLU layer** only: interpreting natural language user requests and routing them to the actual segmentation model with the right prompts.
 
 ### Why Use Local Models?
 * **Offline Deployment:** Independence from internet connections and cloud services.
@@ -160,11 +167,21 @@ The project is exploring various avenues for semantic classification:
 * **Better Integration:** Directly connects with local Python visualization libraries.
 * **More Control:** Allows for easy experimentation, fine-tuning, and offline analysis.
 
-### LLM-Based Interaction Idea
-One proposed direction is to treat the system like a **LiDAR Assistant**. Instead of hardcoding classification pipelines, a multimodal LLM could interpret semantic user requests:
-* *"Find roads"*
-* *"Detect buildings"*
-* *"Locate pavements"*
+### LiDAR Assistant Architecture
+The "LiDAR Assistant" concept is valid but requires correct layer separation:
+
+```
+User: "find roads"
+    ↓
+Llama (optional NLU layer) — interprets intent, formats segmentation prompt
+    ↓
+Grounded SAM / YOLO-World — produces pixel-level segmentation mask
+    ↓
+Backprojection → labeled 3D points
+```
+
+> [!TIP]
+> For the **MWE, skip Llama entirely**. Get Grounded SAM or YOLO-World producing masks first. Add the LLM orchestration layer only after the core pipeline is validated.
 
 ---
 
@@ -229,8 +246,10 @@ graph LR
 | **Potree** | Web-Based Visualization | Smooth rendering of huge datasets inside web browsers |
 | **CloudCompare** | Desktop Visualization & QA | Fast desktop client for manual validation and inspections |
 | **OpenCV** | 2D Image Processing | Advanced image transformations and projection calculations |
-| **YOLO** | Object Detection / Segment | Real-time classification speeds on 2D images |
-| **Llama (Multimodal)** | Semantic Interpretation | Natural language understanding of visual projection views |
+| **Grounded SAM** | Open-Vocab Segmentation | Text-prompted pixel-level masks; primary segmentation engine |
+| **YOLO-World** | Open-Vocab Detection | Fast text-prompted detection; alternative to Grounded SAM |
+| **Classic YOLO** | Fixed-Class Detection | Simplest option; good for MWE with predefined classes |
+| **Llama (Multimodal)** | NLU / Orchestration only | Interprets user intent and routes to segmentation model — does NOT produce masks |
 
 ---
 

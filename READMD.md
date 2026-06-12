@@ -75,8 +75,9 @@ The project intentionally leverages:
 - CloudCompare
 - Potree
 - OpenCV
-- YOLO
-- Local multimodal LLMs
+- Grounded SAM (Grounding DINO + SAM) — primary segmentation engine
+- YOLO-World or Classic YOLO — alternative/fallback segmentation
+- Llama (NLU/orchestration layer only — does NOT produce segmentation masks)
 
 instead of reinventing existing tools.
 
@@ -204,10 +205,13 @@ The current focus is understanding:
 
 Possible models/tools under consideration:
 
-- YOLO
-- OpenCV segmentation
-- Llama multimodal models
-- Local open-source multimodal LLMs
+- **Grounded SAM** (Grounding DINO + SAM) — primary candidate; open-vocabulary, text-prompted, outputs pixel-level masks
+- **YOLO-World** — fast open-vocabulary detection/segmentation via text prompts
+- **Classic YOLO** — fixed-class detection; simplest option for MWE
+- **OpenCV segmentation** — traditional thresholding/filtering
+
+> **Note on Llama / Multimodal LLMs:**
+> Llama is a generative model that outputs text — it cannot produce pixel-level segmentation masks and should not be used as the classification engine. Its valid role is as an optional NLU/orchestration layer that interprets natural language requests (e.g. "find roads") and routes them to the actual segmentation model. For the MWE, skip Llama entirely and get segmentation working first.
 
 The current preference is toward:
 - locally executable models

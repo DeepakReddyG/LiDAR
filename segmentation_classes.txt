@@ -1,0 +1,4 @@
+0 background
+1 lot
+2 parking lot pavement
+3 building
