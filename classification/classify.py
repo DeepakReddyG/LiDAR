@@ -47,7 +47,30 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from PIL import Image
 
-from src.segment import masks_to_label_grid
+# ── Label grid helper ─────────────────────────────────────────────────────────
+
+def masks_to_label_grid(masks: np.ndarray, H: int, W: int) -> np.ndarray:
+    """
+    Convert (M, H, W) mask stack to a (H, W) integer label grid.
+    Pixel label = index of the first mask (largest area) that covers it.
+    Unlabelled pixels get -1.
+
+    Parameters
+    ----------
+    masks : (M, H, W) bool array, sorted largest→smallest
+    H, W  : image dimensions (for consistency check)
+
+    Returns
+    -------
+    label_grid : (H, W) int32, values in [-1, M-1]
+    """
+    assert masks.shape[1:] == (H, W), "mask/image size mismatch"
+    label_grid = np.full((H, W), -1, dtype=np.int32)
+    for i, mask in enumerate(masks):
+        # Only assign if not yet claimed (largest mask wins)
+        unlabelled = label_grid == -1
+        label_grid[mask & unlabelled] = i
+    return label_grid
 
 
 # ── Class registry ────────────────────────────────────────────────────────────

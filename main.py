@@ -52,7 +52,7 @@ def run_slice() -> None:
     print("STAGE 1 — slice.py: Rasterise LAS → top-down PNG")
     print("═" * 60)
     t0 = time.time()
-    from src.slice import load_point_cloud, project_top_down
+    from projection.slice import load_point_cloud, project_top_down
     xy, z = load_point_cloud(LAS_PATH)
     grid, meta = project_top_down(xy, z, resolution=RESOLUTION, output_path=SLICE_PATH)
     print(f"  slice done in {time.time() - t0:.1f}s")
@@ -63,7 +63,7 @@ def run_segment() -> None:
     print("STAGE 2 — segment.py: SAM2 automatic mask generation")
     print("═" * 60)
     t0 = time.time()
-    from src.segment import run_segmentation
+    from segmentation.segment import run_segmentation
     masks, meta = run_segmentation(
         image_path=SLICE_PATH,
         out_dir="data/masks",
@@ -77,7 +77,7 @@ def run_classify() -> None:
     print("STAGE 3 — classify.py: Per-mask classification")
     print("═" * 60)
     t0 = time.time()
-    from src.classify import predict
+    from classification.classify import predict
     class_labels, label_grid = predict(
         image_path=SLICE_PATH,
         grid_path=GRID_PATH,
@@ -90,12 +90,22 @@ def run_classify() -> None:
     print(f"  classify done in {time.time() - t0:.1f}s")
 
 
+def run_evaluate(gt_path: str, pred_path: str) -> None:
+    print("\n" + "═" * 60)
+    print("STAGE 0 — evaluate.py: Per-class IoU + confusion matrix")
+    print("═" * 60)
+    t0 = time.time()
+    from evaluation.evaluate import evaluate
+    evaluate(gt_path, pred_path)
+    print(f"  evaluate done in {time.time() - t0:.1f}s")
+
+
 def run_map_back() -> None:
     print("\n" + "═" * 60)
     print("STAGE 4 — map_back.py: Labels → 3D point cloud")
     print("═" * 60)
     t0 = time.time()
-    from src.map_back import map_labels_to_points
+    from reprojection.map_back import map_labels_to_points
     labels = map_labels_to_points(
         las_path=LAS_PATH,
         grid_meta_path=GRID_META_PATH,
@@ -113,7 +123,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--stage",
-        choices=["slice", "segment", "classify", "map_back", "all"],
+        choices=["slice", "segment", "classify", "map_back", "evaluate", "all"],
         default="all",
         help="Which stage to run (default: all)",
     )
@@ -122,6 +132,8 @@ def main() -> None:
         action="store_true",
         help="Skip slice.py if top_down.png already exists",
     )
+    parser.add_argument("--gt", help="Ground-truth LAS path (--stage evaluate)")
+    parser.add_argument("--pred", help="Predicted/labelled LAS path (--stage evaluate)")
     args = parser.parse_args()
 
     stage = args.stage
@@ -148,6 +160,14 @@ def main() -> None:
         _check_file(LABEL_GRID_PATH, "label_grid.npy (run classify stage first)")
         _check_file(GRID_META_PATH,  "grid_meta.npz (run slice stage first)")
         run_map_back()
+
+    if stage == "evaluate":
+        if not args.gt or not args.pred:
+            raise SystemExit("--stage evaluate requires --gt <gt.las> --pred <pred.las>")
+        _check_file(args.gt, "ground-truth LAS (run evaluation/crop_tiles.py + hand-label first)")
+        _check_file(args.pred, "predicted/labelled LAS")
+        run_evaluate(args.gt, args.pred)
+        return
 
     print(f"\n{'═' * 60}")
     print(f"Pipeline complete in {time.time() - t_start:.1f}s")
