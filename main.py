@@ -6,15 +6,13 @@ v2 stages (design: MANUAL.md, build order: strategy.md):
     python main.py --stage features    # per-point ExG / intensity / returns
     python main.py --stage ground      # CSF ground filter → DTM → HAG
     python main.py --stage ortho       # RGB nadir ortho + stat grids + tiles
+    python main.py --stage segment     # SAM3 text prompts → confidence grids
+    python main.py --stage fuse        # thresholds + physics veto → label grid
+    python main.py --stage map_back    # Z-aware labels → labelled.las
+    python main.py --stage all         # all six, in order
+
     python main.py --stage baseline    # rule-only classifier on eval tiles
     python main.py --stage evaluate --gt <gt.las> --pred <pred.las>
-    python main.py --stage all         # features → ground → ortho → baseline
-
-v1 stages, kept until T5/T6 replace them:
-
-    python main.py --stage segment     # SAM2 automatic masks (superseded by T5)
-    python main.py --stage classify    # heuristic classifier  (superseded by T6)
-    python main.py --stage map_back    # column map-back        (rewritten at T6)
 """
 
 import argparse
@@ -22,15 +20,6 @@ import time
 from pathlib import Path
 
 from config import GRID_META_PATH, LAS_PATH
-
-# v1 paths (die with the remaining v1 stages)
-SLICE_PATH      = "data/slices/top_down.png"
-GRID_PATH       = "data/slices/elevation_grid.npy"
-MASKS_PATH      = "data/masks/masks.npy"
-META_PATH       = "data/masks/mask_meta.npy"
-LABEL_GRID_PATH = "data/masks/label_grid.npy"
-WEIGHTS_PATH    = "models/classifier/vgg19_head.pt"
-DEVICE          = "mps"
 
 
 def _banner(text: str) -> None:
@@ -75,41 +64,35 @@ def run_evaluate(gt_path: str, pred_path: str) -> None:
     evaluate(gt_path, pred_path)
 
 
-# ── v1 stage runners (superseded at T6) ──────────────────────────────────────
-
-
-def run_classify() -> None:
-    _banner("STAGE [v1] — classify.py: per-mask classification")
-    from classification.classify import predict
-    predict(image_path=SLICE_PATH, grid_path=GRID_PATH, masks_path=MASKS_PATH,
-            meta_path=META_PATH, weights_path=WEIGHTS_PATH,
-            out_dir="data/masks", device=DEVICE)
+def run_fuse() -> None:
+    _banner("STAGE — fuse.py: thresholds + physics veto + priority painting")
+    from classification.fuse import run_fuse as run
+    run()
 
 
 def run_map_back() -> None:
-    _banner("STAGE [v1] — map_back.py: labels → 3D point cloud")
-    from reprojection.map_back import map_labels_to_points
-    map_labels_to_points(las_path=str(LAS_PATH), grid_meta_path=str(GRID_META_PATH),
-                         label_grid_path=LABEL_GRID_PATH, out_dir="data/output")
+    _banner("STAGE — map_back.py: Z-aware labels → 3D point cloud")
+    from reprojection.map_back import run_map_back as run
+    run()
 
 
 # ── CLI ──────────────────────────────────────────────────────────────────────
 
-V2_SEQUENCE = ["features", "ground", "ortho", "baseline"]
+V2_SEQUENCE = ["features", "ground", "ortho", "segment", "fuse", "map_back"]
 
 STAGES = {
     "features": (run_features, [(LAS_PATH, "LAS input")]),
     "ground":   (run_ground,   [(LAS_PATH, "LAS input"),
-                                (GRID_META_PATH, "grid_meta.npz (run ortho or v1 slice first)")]),
+                                (GRID_META_PATH, "grid_meta.npz (run ortho first)")]),
     "ortho":    (run_ortho,    [(LAS_PATH, "LAS input"),
                                 ("data/derived/exg.npy", "exg.npy (run features first)"),
                                 ("data/derived/hag.npy", "hag.npy (run ground first)")]),
-    "baseline": (run_baseline, [("data/derived/hag.npy", "hag.npy (run ground first)")]),
     "segment":  (run_segment,  [("data/slices/tiles", "tiles/ (run ortho first)")]),
-    "classify": (run_classify, [(MASKS_PATH, "masks.npy (run segment first)"),
-                                (GRID_PATH, "elevation_grid.npy (v1 slice output)")]),
-    "map_back": (run_map_back, [(LABEL_GRID_PATH, "label_grid.npy (run classify first)"),
-                                (GRID_META_PATH, "grid_meta.npz")]),
+    "fuse":     (run_fuse,     [("data/masks/conf_pavement.npy", "conf grids (run segment first)"),
+                                ("data/slices/exg_grid.npy", "stat grids (run ortho first)")]),
+    "map_back": (run_map_back, [("data/masks/label_grid.npy", "label_grid.npy (run fuse first)"),
+                                ("data/slices/surface_z.npy", "surface_z.npy (run ortho first)")]),
+    "baseline": (run_baseline, [("data/derived/hag.npy", "hag.npy (run ground first)")]),
 }
 
 

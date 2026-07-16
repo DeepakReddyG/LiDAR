@@ -31,6 +31,29 @@ TILE_STRIDE = 768      # px — 25 % overlap
 SAM3_URL = "http://localhost:8000"
 BBOX_FRAC_MAX = 0.8    # drop detections whose bbox covers more of the tile
 
+# ── Fuse: physics veto + painting (MANUAL §6.5) ──────────────────────────────
+# ExG thresholds are first estimates from the sample histogram — calibrate on
+# eval tiles. High veto-rejection for a class = threshold/veto is the weak
+# link; low rejection + low IoU = the prompt is.
+VETO = dict(
+    tree_exg=0.10, tree_hag=6.0,
+    grass_exg=0.05, grass_hag=2.0,
+    building_hag=8.0,
+    pavement_hag=1.5,          # also sidewalk / parking
+    vehicle_hag=(1.0, 9.0),
+)
+# most-specific first; first claim wins
+FUSE_PRIORITY = ["vehicle", "tree", "building", "sidewalk", "parking",
+                 "pavement", "grass"]
+
+# ── Z-aware map-back (MANUAL §6.6) ───────────────────────────────────────────
+MAP_BACK = dict(
+    surface_ft=3.0,        # |z − surface_z| below this = the pixel's 2D label
+    below_tree_hag=2.0,    # below-surface: taller → tree (trunk/understory)
+    below_grass_exg=0.05,  # below-surface ground: green → grass, else pavement
+    rule_conf=128,         # user_data for rule-labelled (non-SAM3) points
+)
+
 # ── Rule-only baseline (T3) ──────────────────────────────────────────────────
 # Standalone classifier thresholds — NOT the §6.5 veto table (vetoes assume
 # SAM3 already claimed the class; standalone rules need tighter conjunctions).
