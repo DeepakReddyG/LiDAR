@@ -6,3 +6,17 @@ __pycache__/
 *.pyd
 .DS_Store
 *.las
+
+# Generated LiDAR data
+data/masks/*.npy
+data/output/*.npz
+
+# Model weights
+models/**/*.pt
+models/**/*.pth
+models/**/*.ckpt
+
+# Aider local files
+.aider.chat.history.md
+.aider.input.history
+.aider.tags.cache.v4/
