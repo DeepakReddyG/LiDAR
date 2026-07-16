@@ -123,7 +123,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--stage",
-        choices=["slice", "segment", "classify", "map_back", "evaluate", "all"],
+        choices=["features", "slice", "segment", "classify", "map_back", "evaluate", "all"],
         default="all",
         help="Which stage to run (default: all)",
     )
@@ -138,6 +138,15 @@ def main() -> None:
 
     stage = args.stage
     t_start = time.time()
+
+    if stage == "features":
+        _check_file(LAS_PATH, "LAS input")
+        print("\n" + "═" * 60)
+        print("STAGE — features.py: per-point NDVI / intensity / returns")
+        print("═" * 60)
+        from projection.features import run_features
+        run_features()
+        return
 
     if stage in ("slice", "all"):
         if args.skip_slice and Path(SLICE_PATH).exists():

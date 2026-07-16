@@ -32,7 +32,7 @@ Three ideas carry the design:
    before any classifier exists. Every prompt, threshold, and veto change is
    judged by per-class IoU and nothing else.
 2. **Appearance + physics.** SAM3 says what things *look like*; the LiDAR
-   attributes (NDVI, height-above-ground, return counts) say what they *are*.
+   attributes (ExG, height-above-ground, return counts) say what they *are*.
    Each vetoes the other's mistakes.
 3. **Z-aware map-back.** 2D labels apply only to points near the visible
    surface. Points below the surface (under canopy, under eaves) are
@@ -62,10 +62,16 @@ preferences:
 points, ~843 × 1058 ft site, ~460 pts/ft², all currently unclassified. Every
 point carries:
 
-- **RGB (16-bit)** → the true-colour ortho SAM3 sees
-- **NIR** → per-point **NDVI = (NIR − R)/(NIR + R)** — vegetation nearly free
+- **RGB (16-bit)** → the true-colour ortho SAM3 sees, and the vegetation
+  proxy: **ExG = (2G − R − B)/(R + G + B)** — empirically bimodal on this
+  data (hard-surface spike at 0, vegetation bump ≈0.1–0.3)
+- **NIR — present in the format but entirely zero** (verified 2026-07-16:
+  min = max = 0 across the file). NDVI is impossible on this dataset; every
+  vegetation rule uses ExG instead.
 - **Intensity** (17k–61k) → asphalt vs concrete/grass separation
-- **Return number / count (1–5)** → multiple returns = canopy
+- **Return number / count (1–5)** → multiple returns = canopy, but **weak
+  on this data**: only ~1.2 % of points are multi-return (sampled) — a
+  hint, never a primary veto
 - Units are **US survey feet** — all distance thresholds in this manual are
   in feet. *(Enhancement: read the unit/CRS from the LAS header at runtime
   rather than hardcoding; the thresholds then scale by the unit factor.)*
@@ -94,7 +100,7 @@ LiDAR/
 │                              #   no constants scattered across modules
 │
 ├── projection/                # STAGE 1 — LAS → rasters & per-point features
-│   ├── features.py            #   NDVI / intensity / returns (memmaps)
+│   ├── features.py            #   ExG / intensity / returns (memmaps)
 │   ├── ground.py              #   CSF ground filter → DTM → per-point HAG
 │   ├── ortho.py               #   RGB nadir ortho + stat grids + tiles
 │   └── slice.py               #   [v1 reference: binning + SAT filter live here
@@ -117,7 +123,7 @@ LiDAR/
 │
 ├── data/                      # the handshake between stages
 │   ├── raw/                   #   input .las (never in git)
-│   ├── derived/               #   per-point memmaps: ndvi, hag, intensity, …
+│   ├── derived/               #   per-point memmaps: exg, hag, intensity, …
 │   ├── slices/                #   ortho, stat grids, grid_meta, tiles/
 │   ├── masks/                 #   per-class confidence grids, label_grid
 │   ├── eval/                  #   hand-labelled GT tiles
@@ -187,24 +193,26 @@ One chunked pass, no dependencies beyond laspy/numpy:
 ```python
 with laspy.open(LAS_PATH) as f:
     n_pts = f.header.point_count
-    ndvi = np.lib.format.open_memmap("data/derived/ndvi.npy", mode="w+",
+    exg = np.lib.format.open_memmap("data/derived/exg.npy", mode="w+",
                                      dtype=np.float32, shape=(n_pts,))
     # same pattern for intensity.npy (float32), nreturns.npy (uint8)
     off = 0
     for ch in f.chunk_iterator(10_000_000):
-        r, n = ch.red.astype(np.float32), ch.nir.astype(np.float32)
-        ndvi[off:off + len(ch)] = (n - r) / (n + r + 1e-6)
+        r, g, b = (np.asarray(getattr(ch, c), np.float32) for c in ("red", "green", "blue"))
+        exg[off:off + len(ch)] = (2*g - r - b) / (r + g + b + 1e-6)
         ...
         off += len(ch)
 ```
 
 Outputs (`data/derived/`, all index-aligned with LAS point order):
-`ndvi.npy`, `intensity.npy`, `nreturns.npy`. ~1.6 GB per float32 array on
+`exg.npy`, `intensity.npy`, `nreturns.npy`. ~1.6 GB per float32 array on
 disk; memory-mapped, so RAM stays flat.
 
-**Gate before proceeding:** plot the NDVI histogram. It should be bimodal
-(vegetation vs hard surface). If it isn't, the NIR channel is unreliable and
-the veto rules in §6.5 must be recalibrated on the eval tiles.
+**Gate before proceeding:** plot the ExG histogram. It must show the
+hard-surface spike at 0 plus a vegetation bump ≈0.1–0.3. *(Gate outcome,
+2026-07-16: the original NDVI plan failed this gate — NIR is all zeros in
+this dataset — and ExG passed it on a 5 M-point sample. That is why this
+stage computes ExG.)*
 
 ### 6.2 `projection/ground.py` — DTM + Height Above Ground (≈1 day)
 
@@ -237,7 +245,7 @@ Outputs (`data/slices/`):
   cell's max Z (top-surface colour, not colour smeared through canopy).
   16-bit → 8-bit: divide by 256.
 - **`surface_z.npy`** — max Z per cell. This drives the Z-aware map-back.
-- **`ndvi_grid.npy`, `hag_grid.npy`, `intensity_grid.npy`** — mean per cell,
+- **`exg_grid.npy`, `hag_grid.npy`, `intensity_grid.npy`** — mean per cell,
   for the veto stage.
 - **`void_mask.npy`** — cells containing zero points (the black scan lines
   seen in the Temple-Texas render). Any label on a void pixel is vetoed at
@@ -302,12 +310,16 @@ with the §6.3 stat grids. Starting rules — calibrate on eval tiles:
 
 | class | keep a pixel only if |
 |---|---|
-| tree | NDVI > 0.2 **or** HAG > 6 |
-| grass | NDVI > 0.15 **and** HAG < 2 |
+| tree | ExG > 0.10 **or** HAG > 6 |
+| grass | ExG > 0.05 **and** HAG < 2 |
 | building | HAG > 8 |
 | road / sidewalk / parking | HAG < 1.5 |
 | vehicle | 1 < HAG < 9 |
 | any | not on `void_mask` |
+
+(ExG thresholds are first estimates from the sample histogram — the
+hard-surface spike sits at 0, vegetation from ≈0.05–0.1 up. Calibrate on
+eval tiles.)
 
 Then paint `label_grid.npy` most-specific-first, first claim wins:
 **vehicle → tree → building → sidewalk → parking → road → grass.**
@@ -335,9 +347,9 @@ labels[on_surface] = label_grid[row, col][on_surface]
 
 # below-surface points (under canopy, under eaves): LiDAR rules, not SAM3
 below = ~on_surface
-labels[below & (hag > 2)]                   = TREE      # trunk / understory
-labels[below & (hag <= 2) & (ndvi > 0.15)]  = GRASS
-labels[below & (hag <= 2) & (ndvi <= 0.15)] = ROAD_OR_PAVEMENT
+labels[below & (hag > 2)]                  = TREE       # trunk / understory
+labels[below & (hag <= 2) & (exg > 0.05)]  = GRASS
+labels[below & (hag <= 2) & (exg <= 0.05)] = ROAD_OR_PAVEMENT
 ```
 
 This is the payoff of the whole design: v1 structurally could not label a
@@ -369,11 +381,11 @@ duplicated paths across four files; never again.
 
 | artefact | producer | consumers | shape / format |
 |---|---|---|---|
-| `data/derived/ndvi.npy`, `intensity.npy`, `nreturns.npy` | features.py | fuse (via grids), map_back | `(N,)` memmap, LAS point order |
+| `data/derived/exg.npy`, `intensity.npy`, `nreturns.npy` | features.py | fuse (via grids), map_back | `(N,)` memmap, LAS point order |
 | `data/derived/dtm.npy`, `hag.npy` | ground.py | ortho, fuse, map_back | grid / `(N,)` memmap |
 | `data/slices/ortho_rgb.png` + `tiles/` | ortho.py | segment_sam3 | uint8 RGB |
 | `data/slices/surface_z.npy` | ortho.py | map_back | `(H, W)` float32 |
-| `data/slices/{ndvi,hag,intensity}_grid.npy`, `void_mask.npy` | ortho.py | fuse | `(H, W)` |
+| `data/slices/{exg,hag,intensity}_grid.npy`, `void_mask.npy` | ortho.py | fuse | `(H, W)` |
 | `data/slices/grid_meta.npz` | ortho.py | segment_sam3, map_back, evaluate | x_min, y_min, resolution, rows, cols |
 | `data/masks/conf_<class>.npy` | segment_sam3.py | fuse | `(H, W)` float32, raw scores |
 | `data/masks/label_grid.npy`, `conf_grid.npy` | fuse.py | map_back | `(H, W)` int32 / float32 |
@@ -394,7 +406,7 @@ Two invariants:
 | # | Task | Effort | Done when |
 |---|---|---|---|
 | 1 | Eval tiles (index-stamped) + `evaluate.py` | 1 day | IoU table prints for any labelled LAS |
-| 2 | `features.py` (NDVI/intensity/returns) | ½ day | memmaps exist; NDVI histogram bimodal |
+| 2 | `features.py` (ExG/intensity/returns) | ½ day | memmaps exist; ExG histogram shows veg bump |
 | 3 | `ground.py` (CSF → DTM → HAG) | 1 day | DTM image is bare terrain |
 | 4 | **Rule-only baseline scored** — the §6.5 veto rules alone as a classifier (five numpy comparisons, no neural net) | ½ day | IoU numbers recorded |
 | 5 | `ortho.py` (RGB ortho + grids + tiles, inpainted voids) | ½–1 day | ortho looks like an aerial photo |
@@ -487,7 +499,7 @@ Improvements folded into this manual, and the deferred ones, in one place:
 2. **Out-of-distribution input:** the false-colour elevation/relief/slope
    composite resembles nothing in a vision model's training data. The RGB
    ortho does — the Temple-Texas result is the proof.
-3. **Ignored the richest data:** format-8 LAS carries RGB/NIR/intensity/
+3. **Ignored the richest data:** format-8 LAS carries RGB/intensity/
    returns; v1 read XYZ only.
 4. **Column-wise map-back:** every point in a vertical column got the
    surface pixel's label — ground under trees became "vegetation" even when

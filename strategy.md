@@ -26,7 +26,7 @@ a goal, context, spec, constraints, and a runnable verification gate.
   first — it is the authoritative design. This strategy implements its
   build order (MANUAL §8).
 - Pipeline: LAS → RGB nadir ortho → SAM3 text-prompted segmentation →
-  physics veto (NDVI/HAG/returns) → Z-aware map-back → labelled LAS,
+  physics veto (ExG/HAG/returns) → Z-aware map-back → labelled LAS,
   scored against hand-labelled ground truth.
 - Folder-per-stage layout (MANUAL §4): `projection/` (features, ground,
   ortho), `segmentation/` (mlx_sam3 + segment_sam3), `classification/`
@@ -34,7 +34,9 @@ a goal, context, spec, constraints, and a runnable verification gate.
   the only interface between stages — a stage never imports another stage.
 - Dataset: `data/raw/UPark_Merged_PS_NAD83_G18_USFT_las.las` — LAS point
   format 8, 411.5 M points, ~843×1058 ft, units US survey feet. Point
-  attributes: XYZ, RGB (16-bit), NIR, intensity, return number/count.
+  attributes: XYZ, RGB (16-bit), intensity, return number/count. The NIR
+  slot exists but is ALL ZEROS (verified) — the vegetation proxy is
+  ExG = (2G−R−B)/(R+G+B), never NDVI.
 - Two environments, never merged: this repo = python 3.11 venv (`.venv`,
   laspy/numpy/torch-era); `segmentation/mlx_sam3/` = python 3.14 + MLX
   (own venv via uv). Stage 2 crosses that boundary via HTTP.
@@ -116,7 +118,7 @@ prints an IoU table; the synthetic self-check passes.
 ## T1 — Per-point spectral features
 
 /goal
-NDVI, intensity, and return-count memmaps exist for all 411 M points,
+ExG, intensity, and return-count memmaps exist for all 411 M points,
 index-aligned with LAS order.
 
 /context
@@ -124,24 +126,24 @@ Read MANUAL §6.1 (contains the exact chunked-memmap code pattern).
 
 /spec
 `projection/features.py` — one chunked pass over the raw LAS writing three
-memmaps to `data/derived/`: `ndvi.npy` (float32, (NIR−R)/(NIR+R+1e-6)),
+memmaps to `data/derived/`: `exg.npy` (float32, (2G−R−B)/(R+G+B+1e-6)),
 `intensity.npy` (float32), `nreturns.npy` (uint8, number_of_returns).
-Also write `data/derived/ndvi_hist.png` (numpy histogram + matplotlib) —
-this is the human gate: the histogram must be bimodal (vegetation vs hard
-surface). Print a warning telling the human to inspect it.
+Also write `data/derived/exg_hist.png` (numpy histogram + matplotlib) —
+this is the human gate: the histogram must show a hard-surface spike at 0
+plus a vegetation bump ≈0.1–0.3. Print a warning telling the human to inspect it.
 Wire `--stage features` into `main.py`.
 
 /verify
 Self-check: run the pass on the first chunk only (`--limit-chunks 1` debug
-flag), assert output length, dtype, no NaN/inf in NDVI, NDVI within
-[−1, 1].
+flag), assert output length, dtype, no NaN/inf in ExG, ExG within
+[−1, 2].
 
 /done-when
 All three memmaps exist with `len == header.point_count`; RAM stays flat
 during the run (memmap, not accumulation); histogram PNG written.
 
 /commit
-`feat(projection): chunked NDVI/intensity/returns feature pass`
+`feat(projection): chunked ExG/intensity/returns feature pass`
 
 ---
 
@@ -199,9 +201,9 @@ Read MANUAL §6.5 (veto table — used here as the classifier itself) and
 /spec
 `classification/baseline.py` — chunked pass classifying every point
 directly from per-point features (no grids, no SAM3):
-tree: ndvi > 0.2 or hag > 6 (and nreturns > 1 strengthens it);
-grass: ndvi > 0.15 and hag < 2; building: hag > 8 and ndvi ≤ 0.15;
-pavement: hag < 1.5 and ndvi ≤ 0.15; else unlabelled. Priority order per
+tree: exg > 0.10 or hag > 6 (and nreturns > 1 strengthens it);
+grass: exg > 0.05 and hag < 2; building: hag > 8 and exg ≤ 0.05;
+pavement: hag < 1.5 and exg ≤ 0.05; else unlabelled. Priority order per
 MANUAL §6.5. Thresholds from `config.py`.
 Write `data/output/baseline.las` reusing the chunked LAS-write pattern
 from `reprojection/map_back.py`. Run T0's evaluate against all three GT
@@ -238,7 +240,7 @@ This task absorbs `slice.py`; delete it at the end. Dependency:
 - `ortho_rgb.png` — per cell, mean R,G,B of points within 1.5 ft of the
   cell's max Z (top-surface colour). 16-bit → 8-bit via /256.
 - `surface_z.npy` — max Z per cell (float32).
-- `ndvi_grid.npy`, `hag_grid.npy`, `intensity_grid.npy` — mean per cell.
+- `exg_grid.npy`, `hag_grid.npy`, `intensity_grid.npy` — mean per cell.
 - `void_mask.npy` — bool, cells with zero points.
 - Void fill: `cv2.inpaint` (Telea, radius ~3 px) on the RGB — NOT a box
   blur. The ortho must stay photo-like; that is the entire reason it
@@ -340,7 +342,7 @@ Read MANUAL §6.5, §6.6, §7. Modify `reprojection/map_back.py` in place
 Part A — `classification/fuse.py`:
 1. Threshold each `conf_<class>.npy` with the per-class threshold from
    `config.py`.
-2. Physics veto per MANUAL §6.5 table (NDVI/HAG grids, void_mask). Log
+2. Physics veto per MANUAL §6.5 table (ExG/HAG grids, void_mask). Log
    the veto-rejection rate per class to stdout and
    `data/masks/veto_stats.json`.
 3. Priority painting, first claim wins: vehicle → tree → building →
@@ -354,8 +356,8 @@ Part B — `reprojection/map_back.py` (rewrite the core loop, chunked):
 surf       = surface_z[row, col]
 on_surface = |z − surf| < 3.0 ft
 labels[on_surface] = label_grid[row, col]
-below-surface: hag > 2 → tree; hag ≤ 2 & ndvi > 0.15 → grass;
-               hag ≤ 2 & ndvi ≤ 0.15 → road/pavement
+below-surface: hag > 2 → tree; hag ≤ 2 & exg > 0.05 → grass;
+               hag ≤ 2 & exg ≤ 0.05 → road/pavement
 ```
 Write `data/output/labelled.las`: `classification` = LAS codes from the
 §5 table; `user_data` = confidence 0–255 (winning pixel confidence for
@@ -423,6 +425,6 @@ per tuning milestone: `tune: <what changed> — <IoU delta>`
 - No new dependency beyond: laspy, numpy, matplotlib, opencv-python,
   cloth-simulation-filter, requests (this repo) — anything else needs an
   explicit human yes.
-- Human gates (NDVI histogram, DTM preview, ortho appearance,
+- Human gates (ExG histogram, DTM preview, ortho appearance,
   CloudCompare inspection) cannot be auto-passed: produce the artefact,
   print what to look for, and wait.
