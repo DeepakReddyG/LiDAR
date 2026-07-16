@@ -123,7 +123,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--stage",
-        choices=["features", "ground", "slice", "segment", "classify", "map_back", "evaluate", "all"],
+        choices=["features", "ground", "baseline", "slice", "segment", "classify", "map_back", "evaluate", "all"],
         default="all",
         help="Which stage to run (default: all)",
     )
@@ -156,6 +156,14 @@ def main() -> None:
         print("═" * 60)
         from projection.ground import run_ground
         run_ground()
+        return
+
+    if stage == "baseline":
+        print("\n" + "═" * 60)
+        print("STAGE — baseline.py: rule-only classifier on eval tiles")
+        print("═" * 60)
+        from classification.baseline import run_baseline
+        run_baseline()
         return
 
     if stage in ("slice", "all"):

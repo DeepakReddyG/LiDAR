@@ -22,6 +22,18 @@ DECIMATE_CELL = 2.0      # ft — lowest-Z decimation cell for CSF
 CLOTH_RESOLUTION = 2.0   # ft — CSF cloth resolution; raise if DTM embosses buildings
 GROUND_OUTLIER_FT = 5.0  # ft — drop decimated cells this far below 5×5 median
 
+# ── Rule-only baseline (T3) ──────────────────────────────────────────────────
+# Standalone classifier thresholds — NOT the §6.5 veto table (vetoes assume
+# SAM3 already claimed the class; standalone rules need tighter conjunctions).
+BASELINE = dict(
+    veg_exg=0.05,      # ExG above this = vegetated
+    hard_exg=0.05,     # ExG at/below this = hard surface
+    tree_hag=6.0,      # vegetated and taller than this = tree
+    grass_hag=2.0,     # vegetated and lower than this = grass
+    building_hag=8.0,  # hard surface taller than this = building
+    pavement_hag=1.5,  # hard surface lower than this = pavement
+)
+
 # ── Class table (MANUAL §5) ─────────────────────────────────────────────────
 # id -> name, SAM3 text prompt, starting confidence threshold, LAS class code.
 # NOTE: pavement/sidewalk/parking all share LAS code 11 (no standard LAS code
