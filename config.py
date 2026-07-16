@@ -34,12 +34,10 @@ CLASSES = {
 UNLABELLED_LAS_CODE = 1
 
 # ── Eval tiles (MANUAL §6.0) ─────────────────────────────────────────────────
-# PLACEHOLDER BOUNDS — these will crop the wrong (or empty) area. A human must
-# pick real (x0, y0, x1, y1) in US survey feet by inspecting the site (e.g.
-# data/slices/top_down.png or the raw LAS in CloudCompare) before running
-# `python -m evaluation.crop_tiles`.
+# 150×150 ft boxes picked visually from data/slices/top_down.png
+# (grid: x = 1390744.38 + col*0.5, y = 448710.05 - row*0.5).
 EVAL_TILE_BOUNDS: dict[str, tuple[float, float, float, float]] = {
-    "a": (0.0, 0.0, 150.0, 150.0),  # road + parking
-    "b": (0.0, 0.0, 150.0, 150.0),  # buildings
-    "c": (0.0, 0.0, 150.0, 150.0),  # trees over ground
+    "a": (1390954.38, 447810.05, 1391104.38, 447960.05),  # road + parking row (~15 cars) + 2 trees
+    "b": (1391169.38, 447785.05, 1391319.38, 447935.05),  # two large buildings + courtyard
+    "c": (1391184.38, 448035.05, 1391334.38, 448185.05),  # two tree canopies over open ground
 }
