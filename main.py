@@ -123,7 +123,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--stage",
-        choices=["features", "slice", "segment", "classify", "map_back", "evaluate", "all"],
+        choices=["features", "ground", "slice", "segment", "classify", "map_back", "evaluate", "all"],
         default="all",
         help="Which stage to run (default: all)",
     )
@@ -146,6 +146,16 @@ def main() -> None:
         print("═" * 60)
         from projection.features import run_features
         run_features()
+        return
+
+    if stage == "ground":
+        _check_file(LAS_PATH, "LAS input")
+        _check_file(GRID_META_PATH, "grid_meta.npz (run slice stage first)")
+        print("\n" + "═" * 60)
+        print("STAGE — ground.py: CSF ground filter → DTM → per-point HAG")
+        print("═" * 60)
+        from projection.ground import run_ground
+        run_ground()
         return
 
     if stage in ("slice", "all"):

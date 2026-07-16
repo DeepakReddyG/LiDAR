@@ -17,6 +17,11 @@ GRID_META_PATH = SLICES_DIR / "grid_meta.npz"
 
 CHUNK_SIZE = 10_000_000
 
+# ── Ground / DTM (MANUAL §6.2) ───────────────────────────────────────────────
+DECIMATE_CELL = 2.0      # ft — lowest-Z decimation cell for CSF
+CLOTH_RESOLUTION = 2.0   # ft — CSF cloth resolution; raise if DTM embosses buildings
+GROUND_OUTLIER_FT = 5.0  # ft — drop decimated cells this far below 5×5 median
+
 # ── Class table (MANUAL §5) ─────────────────────────────────────────────────
 # id -> name, SAM3 text prompt, starting confidence threshold, LAS class code.
 # NOTE: pavement/sidewalk/parking all share LAS code 11 (no standard LAS code
