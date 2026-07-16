@@ -63,18 +63,19 @@ def run_baseline() -> None:
     run()
 
 
+def run_segment() -> None:
+    _banner("STAGE — segment_sam3.py: SAM3 text prompts → confidence grids")
+    from segmentation.segment_sam3 import run_segment_sam3
+    run_segment_sam3()
+
+
 def run_evaluate(gt_path: str, pred_path: str) -> None:
     _banner("STAGE — evaluate.py: per-class IoU + confusion matrix")
     from evaluation.evaluate import evaluate
     evaluate(gt_path, pred_path)
 
 
-# ── v1 stage runners (superseded at T5/T6) ───────────────────────────────────
-
-def run_segment() -> None:
-    _banner("STAGE [v1] — segment.py: SAM2 automatic mask generation")
-    from segmentation.segment import run_segmentation
-    run_segmentation(image_path=SLICE_PATH, out_dir="data/masks", device=DEVICE)
+# ── v1 stage runners (superseded at T6) ──────────────────────────────────────
 
 
 def run_classify() -> None:
@@ -104,7 +105,7 @@ STAGES = {
                                 ("data/derived/exg.npy", "exg.npy (run features first)"),
                                 ("data/derived/hag.npy", "hag.npy (run ground first)")]),
     "baseline": (run_baseline, [("data/derived/hag.npy", "hag.npy (run ground first)")]),
-    "segment":  (run_segment,  [(SLICE_PATH, "top_down.png (v1 slice output)")]),
+    "segment":  (run_segment,  [("data/slices/tiles", "tiles/ (run ortho first)")]),
     "classify": (run_classify, [(MASKS_PATH, "masks.npy (run segment first)"),
                                 (GRID_PATH, "elevation_grid.npy (v1 slice output)")]),
     "map_back": (run_map_back, [(LABEL_GRID_PATH, "label_grid.npy (run classify first)"),

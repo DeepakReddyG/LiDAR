@@ -3,6 +3,7 @@ FastAPI backend for SAM3 segmentation model.
 Provides endpoints for image upload, text prompts, box prompts, and segmentation results.
 """
 
+import base64
 import io
 import os
 import sys
@@ -341,6 +342,62 @@ async def set_confidence(request: ConfidenceRequest):
         "threshold": request.threshold,
         "message": "Confidence threshold updated. Re-run segmentation to apply."
     }
+
+
+class SegmentBatchRequest(BaseModel):
+    image: str            # base64-encoded PNG/JPEG
+    prompts: list[str]
+
+
+# Raw-score floor for /segment_batch: detections above this are returned with
+# their raw scores; the caller applies real per-class thresholds downstream.
+# Thresholding here would force re-running inference on every tuning tweak.
+RAW_SCORE_FLOOR = 0.1
+
+
+@app.post("/segment_batch")
+async def segment_batch(request: SegmentBatchRequest):
+    """Headless batch segmentation: one image, many text prompts, raw scores.
+
+    Encodes the image ONCE (processor.set_image), then iterates prompts on
+    the same state — the encoder is the expensive part, so this is ~Nx faster
+    than one upload per prompt for N prompts.
+    """
+    if processor is None:
+        raise HTTPException(status_code=503, detail="Model not loaded yet")
+
+    try:
+        image = Image.open(io.BytesIO(base64.b64decode(request.image))).convert("RGB")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Bad image: {e}")
+
+    old_threshold = processor.confidence_threshold
+    processor.confidence_threshold = RAW_SCORE_FLOOR
+    try:
+        start = time.perf_counter()
+        state = processor.set_image(image)
+        results: dict[str, list] = {}
+        for prompt in request.prompts:
+            processor.reset_all_prompts(state)
+            state = processor.set_text_prompt(prompt, state)
+            ser = serialize_state(state)
+            results[prompt] = [
+                {"mask_rle": m, "score": s, "bbox": b}
+                for m, s, b in zip(ser.get("masks", []),
+                                   ser.get("scores", []),
+                                   ser.get("boxes", []))
+            ]
+        return {
+            "results": results,
+            "width": image.size[0],
+            "height": image.size[1],
+            "score_floor": RAW_SCORE_FLOOR,
+            "processing_time_ms": round((time.perf_counter() - start) * 1000, 2),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error during batch segmentation: {e}")
+    finally:
+        processor.confidence_threshold = old_threshold
 
 
 @app.delete("/session/{session_id}")

@@ -27,6 +27,10 @@ TOP_SURFACE_FT = 1.5   # ft — points within this of a cell's max Z colour the 
 TILE_SIZE = 1024       # px
 TILE_STRIDE = 768      # px — 25 % overlap
 
+# ── SAM3 segmentation (MANUAL §6.4) ──────────────────────────────────────────
+SAM3_URL = "http://localhost:8000"
+BBOX_FRAC_MAX = 0.8    # drop detections whose bbox covers more of the tile
+
 # ── Rule-only baseline (T3) ──────────────────────────────────────────────────
 # Standalone classifier thresholds — NOT the §6.5 veto table (vetoes assume
 # SAM3 already claimed the class; standalone rules need tighter conjunctions).
