@@ -28,7 +28,26 @@ from PIL import Image
 
 from config import (CHUNK_SIZE, CLOTH_RESOLUTION, DECIMATE_CELL, DERIVED_DIR,
                     GRID_META_PATH, GROUND_OUTLIER_FT, LAS_PATH)
-from projection.slice import _uniform_filter_2d
+
+
+def _uniform_filter_2d(arr: np.ndarray, size: int) -> np.ndarray:
+    """Fast 2D box-filter (uniform mean) via a 1-indexed Summed Area Table.
+    Numpy-only equivalent of scipy.ndimage.uniform_filter. (Inherited from
+    v1 slice.py, its last surviving piece.)"""
+    rows, cols = arr.shape
+    h_lo = size // 2
+    h_hi = size - h_lo - 1
+
+    padded = np.pad(arr, ((h_lo, h_hi), (h_lo, h_hi)), mode="edge")
+    cs = np.zeros((rows + size, cols + size), dtype=np.float64)
+    cs[1:, 1:] = padded.cumsum(axis=0).cumsum(axis=1)
+    out = (
+        cs[size:size + rows, size:size + cols]
+        - cs[:rows,          size:size + cols]
+        - cs[size:size + rows, :cols]
+        + cs[:rows,            :cols]
+    ) / (size * size)
+    return out.astype(arr.dtype)
 
 
 def _grid_meta() -> dict:

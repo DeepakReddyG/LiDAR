@@ -1,218 +1,149 @@
 """
-main.py — LiDAR Point Cloud Segmentation Pipeline
+main.py — LiDAR Point Cloud Classification Pipeline (v2, MANUAL.md)
 
-Full pipeline:
-    .las → slice.py → segment.py → classify.py → map_back.py
+v2 stages (design: MANUAL.md, build order: strategy.md):
 
-Usage
------
-Run full pipeline (from project root, with .venv active):
+    python main.py --stage features    # per-point ExG / intensity / returns
+    python main.py --stage ground      # CSF ground filter → DTM → HAG
+    python main.py --stage ortho       # RGB nadir ortho + stat grids + tiles
+    python main.py --stage baseline    # rule-only classifier on eval tiles
+    python main.py --stage evaluate --gt <gt.las> --pred <pred.las>
+    python main.py --stage all         # features → ground → ortho → baseline
 
-    python main.py
+v1 stages, kept until T5/T6 replace them:
 
-Or run individual stages:
-
-    python main.py --stage slice
-    python main.py --stage segment
-    python main.py --stage classify
-    python main.py --stage map_back
-
-Skip regenerating the slice if top_down.png already exists:
-
-    python main.py --skip-slice
-
-Use a trained classifier instead of the heuristic:
-
-    python main.py --stage classify   # after you've run classify.train()
+    python main.py --stage segment     # SAM2 automatic masks (superseded by T5)
+    python main.py --stage classify    # heuristic classifier  (superseded by T6)
+    python main.py --stage map_back    # column map-back        (rewritten at T6)
 """
 
 import argparse
 import time
 from pathlib import Path
 
+from config import GRID_META_PATH, LAS_PATH
 
-# ── Config ────────────────────────────────────────────────────────────────────
-
-LAS_PATH        = "data/raw/UPark_Merged_PS_NAD83_G18_USFT_las.las"
+# v1 paths (die with the remaining v1 stages)
 SLICE_PATH      = "data/slices/top_down.png"
 GRID_PATH       = "data/slices/elevation_grid.npy"
-GRID_META_PATH  = "data/slices/grid_meta.npz"
 MASKS_PATH      = "data/masks/masks.npy"
 META_PATH       = "data/masks/mask_meta.npy"
 LABEL_GRID_PATH = "data/masks/label_grid.npy"
 WEIGHTS_PATH    = "models/classifier/vgg19_head.pt"
-DEVICE          = "mps"        # Apple Silicon; change to "cuda" or "cpu"
-RESOLUTION      = 0.5          # ft per pixel
+DEVICE          = "mps"
 
 
-# ── Stage runners ─────────────────────────────────────────────────────────────
-
-def run_slice() -> None:
-    print("\n" + "═" * 60)
-    print("STAGE 1 — slice.py: Rasterise LAS → top-down PNG")
-    print("═" * 60)
-    t0 = time.time()
-    from projection.slice import load_point_cloud, project_top_down
-    xy, z = load_point_cloud(LAS_PATH)
-    grid, meta = project_top_down(xy, z, resolution=RESOLUTION, output_path=SLICE_PATH)
-    print(f"  slice done in {time.time() - t0:.1f}s")
+def _banner(text: str) -> None:
+    print("\n" + "═" * 60 + f"\n{text}\n" + "═" * 60)
 
 
-def run_segment() -> None:
-    print("\n" + "═" * 60)
-    print("STAGE 2 — segment.py: SAM2 automatic mask generation")
-    print("═" * 60)
-    t0 = time.time()
-    from segmentation.segment import run_segmentation
-    masks, meta = run_segmentation(
-        image_path=SLICE_PATH,
-        out_dir="data/masks",
-        device=DEVICE,
-    )
-    print(f"  segment done in {time.time() - t0:.1f}s  →  {len(masks)} masks")
+# ── v2 stage runners ─────────────────────────────────────────────────────────
+
+def run_features() -> None:
+    _banner("STAGE — features.py: per-point ExG / intensity / returns")
+    from projection.features import run_features as run
+    run()
 
 
-def run_classify() -> None:
-    print("\n" + "═" * 60)
-    print("STAGE 3 — classify.py: Per-mask classification")
-    print("═" * 60)
-    t0 = time.time()
-    from classification.classify import predict
-    class_labels, label_grid = predict(
-        image_path=SLICE_PATH,
-        grid_path=GRID_PATH,
-        masks_path=MASKS_PATH,
-        meta_path=META_PATH,
-        weights_path=WEIGHTS_PATH,
-        out_dir="data/masks",
-        device=DEVICE,
-    )
-    print(f"  classify done in {time.time() - t0:.1f}s")
+def run_ground() -> None:
+    _banner("STAGE — ground.py: CSF ground filter → DTM → per-point HAG")
+    from projection.ground import run_ground as run
+    run()
+
+
+def run_ortho() -> None:
+    _banner("STAGE — ortho.py: RGB nadir ortho + stat grids + tiles")
+    from projection.ortho import run_ortho as run
+    run()
+
+
+def run_baseline() -> None:
+    _banner("STAGE — baseline.py: rule-only classifier on eval tiles")
+    from classification.baseline import run_baseline as run
+    run()
 
 
 def run_evaluate(gt_path: str, pred_path: str) -> None:
-    print("\n" + "═" * 60)
-    print("STAGE 0 — evaluate.py: Per-class IoU + confusion matrix")
-    print("═" * 60)
-    t0 = time.time()
+    _banner("STAGE — evaluate.py: per-class IoU + confusion matrix")
     from evaluation.evaluate import evaluate
     evaluate(gt_path, pred_path)
-    print(f"  evaluate done in {time.time() - t0:.1f}s")
+
+
+# ── v1 stage runners (superseded at T5/T6) ───────────────────────────────────
+
+def run_segment() -> None:
+    _banner("STAGE [v1] — segment.py: SAM2 automatic mask generation")
+    from segmentation.segment import run_segmentation
+    run_segmentation(image_path=SLICE_PATH, out_dir="data/masks", device=DEVICE)
+
+
+def run_classify() -> None:
+    _banner("STAGE [v1] — classify.py: per-mask classification")
+    from classification.classify import predict
+    predict(image_path=SLICE_PATH, grid_path=GRID_PATH, masks_path=MASKS_PATH,
+            meta_path=META_PATH, weights_path=WEIGHTS_PATH,
+            out_dir="data/masks", device=DEVICE)
 
 
 def run_map_back() -> None:
-    print("\n" + "═" * 60)
-    print("STAGE 4 — map_back.py: Labels → 3D point cloud")
-    print("═" * 60)
-    t0 = time.time()
+    _banner("STAGE [v1] — map_back.py: labels → 3D point cloud")
     from reprojection.map_back import map_labels_to_points
-    labels = map_labels_to_points(
-        las_path=LAS_PATH,
-        grid_meta_path=GRID_META_PATH,
-        label_grid_path=LABEL_GRID_PATH,
-        out_dir="data/output",
-    )
-    print(f"  map_back done in {time.time() - t0:.1f}s  →  {len(labels):,} labelled points")
+    map_labels_to_points(las_path=str(LAS_PATH), grid_meta_path=str(GRID_META_PATH),
+                         label_grid_path=LABEL_GRID_PATH, out_dir="data/output")
 
 
-# ── CLI ───────────────────────────────────────────────────────────────────────
+# ── CLI ──────────────────────────────────────────────────────────────────────
+
+V2_SEQUENCE = ["features", "ground", "ortho", "baseline"]
+
+STAGES = {
+    "features": (run_features, [(LAS_PATH, "LAS input")]),
+    "ground":   (run_ground,   [(LAS_PATH, "LAS input"),
+                                (GRID_META_PATH, "grid_meta.npz (run ortho or v1 slice first)")]),
+    "ortho":    (run_ortho,    [(LAS_PATH, "LAS input"),
+                                ("data/derived/exg.npy", "exg.npy (run features first)"),
+                                ("data/derived/hag.npy", "hag.npy (run ground first)")]),
+    "baseline": (run_baseline, [("data/derived/hag.npy", "hag.npy (run ground first)")]),
+    "segment":  (run_segment,  [(SLICE_PATH, "top_down.png (v1 slice output)")]),
+    "classify": (run_classify, [(MASKS_PATH, "masks.npy (run segment first)"),
+                                (GRID_PATH, "elevation_grid.npy (v1 slice output)")]),
+    "map_back": (run_map_back, [(LABEL_GRID_PATH, "label_grid.npy (run classify first)"),
+                                (GRID_META_PATH, "grid_meta.npz")]),
+}
+
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="LiDAR segmentation pipeline"
-    )
-    parser.add_argument(
-        "--stage",
-        choices=["features", "ground", "baseline", "slice", "segment", "classify", "map_back", "evaluate", "all"],
-        default="all",
-        help="Which stage to run (default: all)",
-    )
-    parser.add_argument(
-        "--skip-slice",
-        action="store_true",
-        help="Skip slice.py if top_down.png already exists",
-    )
+    parser = argparse.ArgumentParser(description="LiDAR classification pipeline (v2)")
+    parser.add_argument("--stage", choices=[*STAGES, "evaluate", "all"], default="all")
     parser.add_argument("--gt", help="Ground-truth LAS path (--stage evaluate)")
     parser.add_argument("--pred", help="Predicted/labelled LAS path (--stage evaluate)")
     args = parser.parse_args()
 
-    stage = args.stage
     t_start = time.time()
 
-    if stage == "features":
-        _check_file(LAS_PATH, "LAS input")
-        print("\n" + "═" * 60)
-        print("STAGE — features.py: per-point NDVI / intensity / returns")
-        print("═" * 60)
-        from projection.features import run_features
-        run_features()
-        return
-
-    if stage == "ground":
-        _check_file(LAS_PATH, "LAS input")
-        _check_file(GRID_META_PATH, "grid_meta.npz (run slice stage first)")
-        print("\n" + "═" * 60)
-        print("STAGE — ground.py: CSF ground filter → DTM → per-point HAG")
-        print("═" * 60)
-        from projection.ground import run_ground
-        run_ground()
-        return
-
-    if stage == "baseline":
-        print("\n" + "═" * 60)
-        print("STAGE — baseline.py: rule-only classifier on eval tiles")
-        print("═" * 60)
-        from classification.baseline import run_baseline
-        run_baseline()
-        return
-
-    if stage in ("slice", "all"):
-        if args.skip_slice and Path(SLICE_PATH).exists():
-            print(f"\n[skip] {SLICE_PATH} already exists — skipping slice stage")
-            print("       (remove --skip-slice to regenerate)")
-        else:
-            _check_file(LAS_PATH, "LAS input")
-            run_slice()
-
-    if stage in ("segment", "all"):
-        _check_file(SLICE_PATH, "top_down.png (run slice stage first)")
-        run_segment()
-
-    if stage in ("classify", "all"):
-        _check_file(MASKS_PATH, "masks.npy (run segment stage first)")
-        _check_file(GRID_PATH,  "elevation_grid.npy (run slice stage first)")
-        run_classify()
-
-    if stage in ("map_back", "all"):
-        _check_file(LABEL_GRID_PATH, "label_grid.npy (run classify stage first)")
-        _check_file(GRID_META_PATH,  "grid_meta.npz (run slice stage first)")
-        run_map_back()
-
-    if stage == "evaluate":
+    if args.stage == "evaluate":
         if not args.gt or not args.pred:
             raise SystemExit("--stage evaluate requires --gt <gt.las> --pred <pred.las>")
-        _check_file(args.gt, "ground-truth LAS (run evaluation/crop_tiles.py + hand-label first)")
+        _check_file(args.gt, "ground-truth LAS (crop + hand-label first)")
         _check_file(args.pred, "predicted/labelled LAS")
         run_evaluate(args.gt, args.pred)
         return
 
-    print(f"\n{'═' * 60}")
-    print(f"Pipeline complete in {time.time() - t_start:.1f}s")
-    print(f"{'═' * 60}")
-    print("Outputs:")
-    print(f"  data/slices/top_down.png          false-colour 2D slice")
-    print(f"  data/masks/masks.npy              SAM2 segment masks")
-    print(f"  data/masks/labelled_overlay.png   class visualisation")
-    print(f"  data/output/labelled_points.npz   X, Y, Z, label per point")
-    print(f"  data/output/labelled.las           labelled LAS file")
+    names = V2_SEQUENCE if args.stage == "all" else [args.stage]
+    for name in names:
+        runner, prereqs = STAGES[name]
+        for path, label in prereqs:
+            _check_file(path, label)
+        t0 = time.time()
+        runner()
+        print(f"  {name} done in {time.time() - t0:.1f}s")
+
+    print(f"\nPipeline complete in {time.time() - t_start:.1f}s")
 
 
-def _check_file(path: str, label: str) -> None:
+def _check_file(path, label: str) -> None:
     if not Path(path).exists():
-        raise FileNotFoundError(
-            f"Required file not found: {path}\n"
-            f"  → {label}"
-        )
+        raise FileNotFoundError(f"Required file not found: {path}\n  → {label}")
 
 
 if __name__ == "__main__":

@@ -22,6 +22,11 @@ DECIMATE_CELL = 2.0      # ft — lowest-Z decimation cell for CSF
 CLOTH_RESOLUTION = 2.0   # ft — CSF cloth resolution; raise if DTM embosses buildings
 GROUND_OUTLIER_FT = 5.0  # ft — drop decimated cells this far below 5×5 median
 
+# ── Ortho (MANUAL §6.3) ──────────────────────────────────────────────────────
+TOP_SURFACE_FT = 1.5   # ft — points within this of a cell's max Z colour the ortho
+TILE_SIZE = 1024       # px
+TILE_STRIDE = 768      # px — 25 % overlap
+
 # ── Rule-only baseline (T3) ──────────────────────────────────────────────────
 # Standalone classifier thresholds — NOT the §6.5 veto table (vetoes assume
 # SAM3 already claimed the class; standalone rules need tighter conjunctions).
