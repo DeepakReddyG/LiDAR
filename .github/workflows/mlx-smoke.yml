@@ -1,6 +1,8 @@
 name: MLX smoke test
 
 on:
+  push:
+    branches: [exp]
   schedule:
     - cron: "17 8 * * 1"
   workflow_dispatch:
@@ -30,6 +32,12 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
+
+      - name: Intentional notification test failure
+        if: github.ref == 'refs/heads/exp'
+        run: |
+          echo "::error::Intentional failure to test GitHub Actions notifications"
+          exit 1
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -71,4 +79,3 @@ jobs:
           assert model is not None
           print("SAM3 model loaded successfully.")
           PY
-
