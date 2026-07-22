@@ -1,0 +1,74 @@
+name: MLX smoke test
+
+on:
+  schedule:
+    - cron: "17 8 * * 1"
+  workflow_dispatch:
+    inputs:
+      load_model:
+        description: Download weights and construct the SAM3 model
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mlx-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke-test:
+    name: MLX on Apple Silicon
+    runs-on: macos-15
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: segmentation/mlx_sam3
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: segmentation/mlx_sam3/pyproject.toml
+
+      - name: Cache model weights
+        if: ${{ inputs.load_model == true }}
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/huggingface
+          key: huggingface-sam3-${{ runner.os }}-${{ runner.arch }}
+
+      - name: Install MLX SAM3
+        run: python -m pip install --disable-pip-version-check -e .
+
+      - name: Verify MLX and package imports
+        run: |
+          python - <<'PY'
+          import platform
+          import mlx.core as mx
+          import sam3
+
+          assert platform.machine() == "arm64", platform.machine()
+          assert mx.metal.is_available(), "MLX Metal backend is unavailable"
+          assert callable(sam3.build_sam3_image_model)
+          print("MLX Metal and SAM3 imports are available.")
+          PY
+
+      - name: Download weights and construct model
+        if: ${{ inputs.load_model == true }}
+        run: |
+          python - <<'PY'
+          from sam3 import build_sam3_image_model
+
+          model = build_sam3_image_model()
+          assert model is not None
+          print("SAM3 model loaded successfully.")
+          PY
+

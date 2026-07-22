@@ -36,10 +36,7 @@ def crop_tile(
         offset = 0
         for chunk in reader.chunk_iterator(chunk_size):
             n = len(chunk)
-            mask = (
-                (chunk.x >= x0) & (chunk.x <= x1)
-                & (chunk.y >= y0) & (chunk.y <= y1)
-            )
+            mask = (chunk.x >= x0) & (chunk.x <= x1) & (chunk.y >= y0) & (chunk.y <= y1)
             if mask.any():
                 orig_index_parts.append(
                     np.arange(offset, offset + n, dtype=np.uint32)[mask]

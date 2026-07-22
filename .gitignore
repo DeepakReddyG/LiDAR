@@ -20,3 +20,15 @@ models/**/*.ckpt
 .aider.chat.history.md
 .aider.input.history
 .aider.tags.cache.v4/
+
+# Generated pipeline artifacts
+cloth_nodes.txt
+data/derived/
+data/output/
+data/masks/raw/
+data/masks/veto_stats.json
+data/slices/*_grid.npy
+data/slices/surface_z.npy
+data/slices/ortho_rgb.png
+data/slices/void_mask.npy
+data/slices/tiles/

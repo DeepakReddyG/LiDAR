@@ -63,8 +63,16 @@ def evaluate(gt_path: str | Path, pred_path: str | Path) -> dict:
     pred_codes = np.asarray(pred.classification)[pi]
 
     names = _code_names()
-    codes = sorted(set(names) | {UNLABELLED_LAS_CODE} | set(gt_codes.tolist()) | set(pred_codes.tolist()))
-    labels = [names.get(c, "unlabelled" if c == UNLABELLED_LAS_CODE else f"code_{c}") for c in codes]
+    codes = sorted(
+        set(names)
+        | {UNLABELLED_LAS_CODE}
+        | set(gt_codes.tolist())
+        | set(pred_codes.tolist())
+    )
+    labels = [
+        names.get(c, "unlabelled" if c == UNLABELLED_LAS_CODE else f"code_{c}")
+        for c in codes
+    ]
     code_to_row = {c: i for i, c in enumerate(codes)}
 
     n = len(codes)
@@ -82,7 +90,9 @@ def evaluate(gt_path: str | Path, pred_path: str | Path) -> dict:
         union = tp + fp + fn
         iou[label] = float(tp / union) if union > 0 else float("nan")
 
-    print(f"Matched {n_common:,} points ({'orig_index' if has_index else 'XYZ fallback'})")
+    print(
+        f"Matched {n_common:,} points ({'orig_index' if has_index else 'XYZ fallback'})"
+    )
     print("\nPer-class IoU:")
     for label, v in iou.items():
         print(f"  {label:<28s} {v:.3f}" if v == v else f"  {label:<28s}   n/a")

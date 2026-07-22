@@ -27,8 +27,9 @@ _NAME_TO_ID = {info["name"]: cid for cid, info in CLASSES.items()}
 _THRESH = {info["name"]: info["threshold"] for info in CLASSES.values()}
 
 
-def veto_mask(name: str, exg: np.ndarray, hag: np.ndarray,
-              void: np.ndarray) -> np.ndarray:
+def veto_mask(
+    name: str, exg: np.ndarray, hag: np.ndarray, void: np.ndarray
+) -> np.ndarray:
     """Physics veto per MANUAL §6.5 — NaN stat cells compare False, which
     conveniently vetoes them along with the void mask."""
     v = VETO
@@ -56,14 +57,15 @@ def majority_filter(grid: np.ndarray, size: int = 5) -> np.ndarray:
     counts = np.zeros((len(values), H, W), dtype=np.int16)
     for i in range(size):
         for j in range(size):
-            win = pad[i:i + H, j:j + W]
+            win = pad[i : i + H, j : j + W]
             for k, val in enumerate(values):
                 counts[k] += win == val
     return values[counts.argmax(axis=0)].astype(grid.dtype)
 
 
-def fuse(conf: dict[str, np.ndarray], exg: np.ndarray, hag: np.ndarray,
-         void: np.ndarray) -> tuple[np.ndarray, np.ndarray, dict]:
+def fuse(
+    conf: dict[str, np.ndarray], exg: np.ndarray, hag: np.ndarray, void: np.ndarray
+) -> tuple[np.ndarray, np.ndarray, dict]:
     """Pure core: confidence grids → (label_grid, conf_grid, veto_stats)."""
     shape = next(iter(conf.values())).shape
     label = np.full(shape, -1, dtype=np.int32)
@@ -93,8 +95,10 @@ def run_fuse() -> None:
     exg = np.load(SLICES_DIR / "exg_grid.npy")
     hag = np.load(SLICES_DIR / "hag_grid.npy")
     void = np.load(SLICES_DIR / "void_mask.npy")
-    conf = {info["name"]: np.load(MASKS_DIR / f"conf_{info['name']}.npy")
-            for info in CLASSES.values()}
+    conf = {
+        info["name"]: np.load(MASKS_DIR / f"conf_{info['name']}.npy")
+        for info in CLASSES.values()
+    }
 
     label, conf_grid, stats = fuse(conf, exg, hag, void)
 
@@ -106,16 +110,23 @@ def run_fuse() -> None:
     print("  veto rejection per class (high = threshold/veto is the weak link):")
     for name, s in stats.items():
         rej = f"{s['veto_rejection']:.0%}" if s["veto_rejection"] is not None else "n/a"
-        print(f"    {name:<10s} claimed {s['claimed_px'] / n:6.1%}  kept {s['kept_px'] / n:6.1%}  rejected {rej}")
-    print(f"  labelled {np.mean(label >= 0):.1%} of pixels  →  label_grid.npy, conf_grid.npy")
+        print(
+            f"    {name:<10s} claimed {s['claimed_px'] / n:6.1%}  kept {s['kept_px'] / n:6.1%}  rejected {rej}"
+        )
+    print(
+        f"  labelled {np.mean(label >= 0):.1%} of pixels  →  label_grid.npy, conf_grid.npy"
+    )
 
 
 def _self_check() -> None:
     shape = (20, 20)
     z = np.zeros(shape, dtype=np.float32)
-    exg = np.full(shape, 0.2, np.float32); exg[:, 10:] = 0.0
-    hag = np.zeros(shape, np.float32); hag[10:, :] = 10.0
-    void = np.zeros(shape, bool); void[0, 0] = True
+    exg = np.full(shape, 0.2, np.float32)
+    exg[:, 10:] = 0.0
+    hag = np.zeros(shape, np.float32)
+    hag[10:, :] = 10.0
+    void = np.zeros(shape, bool)
+    void[0, 0] = True
     # quadrants: TL green+low=grass, TR grey+low=pavement,
     #            BL green+tall=tree,  BR grey+tall=building
     conf = {n: z.copy() for n in _NAME_TO_ID}
@@ -123,11 +134,11 @@ def _self_check() -> None:
     conf["pavement"][:10, 10:] = 0.9
     conf["tree"][10:, :10] = 0.9
     conf["building"][10:, 10:] = 0.9
-    conf["vehicle"][0, 5] = 0.9          # claimed but vetoed: hag=0 not in (1,9)
-    conf["grass"][0, 0] = 0.9            # claimed but void
-    conf["grass"][5, 15] = 0.9           # speckle: lone grass claim amid pavement
+    conf["vehicle"][0, 5] = 0.9  # claimed but vetoed: hag=0 not in (1,9)
+    conf["grass"][0, 0] = 0.9  # claimed but void
+    conf["grass"][5, 15] = 0.9  # speckle: lone grass claim amid pavement
     #                                      (vetoed anyway: exg=0 there)
-    conf["pavement"][5, 5] = 0.95        # pavement also claims one grass px —
+    conf["pavement"][5, 5] = 0.95  # pavement also claims one grass px —
     #                                      passes veto (hag<1.5) and pavement
     #                                      outranks grass, but majority erases it
 
@@ -143,6 +154,7 @@ def _self_check() -> None:
 
 if __name__ == "__main__":
     import argparse
+
     p = argparse.ArgumentParser()
     p.add_argument("--self-check", action="store_true")
     if p.parse_args().self_check:

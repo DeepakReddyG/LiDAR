@@ -28,51 +28,60 @@ def _banner(text: str) -> None:
 
 # ── v2 stage runners ─────────────────────────────────────────────────────────
 
+
 def run_features() -> None:
     _banner("STAGE — features.py: per-point ExG / intensity / returns")
     from projection.features import run_features as run
+
     run()
 
 
 def run_ground() -> None:
     _banner("STAGE — ground.py: CSF ground filter → DTM → per-point HAG")
     from projection.ground import run_ground as run
+
     run()
 
 
 def run_ortho() -> None:
     _banner("STAGE — ortho.py: RGB nadir ortho + stat grids + tiles")
     from projection.ortho import run_ortho as run
+
     run()
 
 
 def run_baseline() -> None:
     _banner("STAGE — baseline.py: rule-only classifier on eval tiles")
     from classification.baseline import run_baseline as run
+
     run()
 
 
 def run_segment() -> None:
     _banner("STAGE — segment_sam3.py: SAM3 text prompts → confidence grids")
     from segmentation.segment_sam3 import run_segment_sam3
+
     run_segment_sam3()
 
 
 def run_evaluate(gt_path: str, pred_path: str) -> None:
     _banner("STAGE — evaluate.py: per-class IoU + confusion matrix")
     from evaluation.evaluate import evaluate
+
     evaluate(gt_path, pred_path)
 
 
 def run_fuse() -> None:
     _banner("STAGE — fuse.py: thresholds + physics veto + priority painting")
     from classification.fuse import run_fuse as run
+
     run()
 
 
 def run_map_back() -> None:
     _banner("STAGE — map_back.py: Z-aware labels → 3D point cloud")
     from reprojection.map_back import run_map_back as run
+
     run()
 
 
@@ -82,17 +91,37 @@ V2_SEQUENCE = ["features", "ground", "ortho", "segment", "fuse", "map_back"]
 
 STAGES = {
     "features": (run_features, [(LAS_PATH, "LAS input")]),
-    "ground":   (run_ground,   [(LAS_PATH, "LAS input"),
-                                (GRID_META_PATH, "grid_meta.npz (run ortho first)")]),
-    "ortho":    (run_ortho,    [(LAS_PATH, "LAS input"),
-                                ("data/derived/exg.npy", "exg.npy (run features first)"),
-                                ("data/derived/hag.npy", "hag.npy (run ground first)")]),
-    "segment":  (run_segment,  [("data/slices/tiles", "tiles/ (run ortho first)")]),
-    "fuse":     (run_fuse,     [("data/masks/conf_pavement.npy", "conf grids (run segment first)"),
-                                ("data/slices/exg_grid.npy", "stat grids (run ortho first)")]),
-    "map_back": (run_map_back, [("data/masks/label_grid.npy", "label_grid.npy (run fuse first)"),
-                                ("data/slices/surface_z.npy", "surface_z.npy (run ortho first)")]),
-    "baseline": (run_baseline, [("data/derived/hag.npy", "hag.npy (run ground first)")]),
+    "ground": (
+        run_ground,
+        [(LAS_PATH, "LAS input"), (GRID_META_PATH, "grid_meta.npz (run ortho first)")],
+    ),
+    "ortho": (
+        run_ortho,
+        [
+            (LAS_PATH, "LAS input"),
+            ("data/derived/exg.npy", "exg.npy (run features first)"),
+            ("data/derived/hag.npy", "hag.npy (run ground first)"),
+        ],
+    ),
+    "segment": (run_segment, [("data/slices/tiles", "tiles/ (run ortho first)")]),
+    "fuse": (
+        run_fuse,
+        [
+            ("data/masks/conf_pavement.npy", "conf grids (run segment first)"),
+            ("data/slices/exg_grid.npy", "stat grids (run ortho first)"),
+        ],
+    ),
+    "map_back": (
+        run_map_back,
+        [
+            ("data/masks/label_grid.npy", "label_grid.npy (run fuse first)"),
+            ("data/slices/surface_z.npy", "surface_z.npy (run ortho first)"),
+        ],
+    ),
+    "baseline": (
+        run_baseline,
+        [("data/derived/hag.npy", "hag.npy (run ground first)")],
+    ),
 }
 
 
@@ -107,7 +136,9 @@ def main() -> None:
 
     if args.stage == "evaluate":
         if not args.gt or not args.pred:
-            raise SystemExit("--stage evaluate requires --gt <gt.las> --pred <pred.las>")
+            raise SystemExit(
+                "--stage evaluate requires --gt <gt.las> --pred <pred.las>"
+            )
         _check_file(args.gt, "ground-truth LAS (crop + hand-label first)")
         _check_file(args.pred, "predicted/labelled LAS")
         run_evaluate(args.gt, args.pred)

@@ -29,15 +29,27 @@ import cv2
 import laspy
 import numpy as np
 
-from config import (CHUNK_SIZE, DERIVED_DIR, GRID_META_PATH, LAS_PATH,
-                    SLICES_DIR, TILE_SIZE, TILE_STRIDE, TOP_SURFACE_FT)
+from config import (
+    CHUNK_SIZE,
+    DERIVED_DIR,
+    GRID_META_PATH,
+    LAS_PATH,
+    SLICES_DIR,
+    TILE_SIZE,
+    TILE_STRIDE,
+    TOP_SURFACE_FT,
+)
 
 
 def _grid() -> dict:
     m = np.load(GRID_META_PATH)
-    return dict(x_min=float(m["x_min"]), y_max=float(m["y_max"]),
-                resolution=float(m["resolution"]),
-                rows=int(m["rows"]), cols=int(m["cols"]))
+    return dict(
+        x_min=float(m["x_min"]),
+        y_max=float(m["y_max"]),
+        resolution=float(m["resolution"]),
+        rows=int(m["rows"]),
+        cols=int(m["cols"]),
+    )
 
 
 def _cell_idx(x, y, g):
@@ -61,8 +73,10 @@ def pass1_surface_z(g, las_path=LAS_PATH, limit_chunks=None) -> np.ndarray:
 def pass2_near_surface_means(g, surface, las_path=LAS_PATH, limit_chunks=None):
     """Accumulate per-cell means over points within TOP_SURFACE_FT of max Z."""
     shape = (g["rows"], g["cols"])
-    sums = {k: np.zeros(shape, dtype=np.float64)
-            for k in ("r", "g", "b", "exg", "hag", "inten")}
+    sums = {
+        k: np.zeros(shape, dtype=np.float64)
+        for k in ("r", "g", "b", "exg", "hag", "inten")
+    }
     count = np.zeros(shape, dtype=np.float64)
 
     exg_pts = np.load(DERIVED_DIR / "exg.npy", mmap_mode="r")
@@ -79,8 +93,8 @@ def pass2_near_surface_means(g, surface, las_path=LAS_PATH, limit_chunks=None):
                 ("r", np.asarray(ch.red, np.float64)[near]),
                 ("g", np.asarray(ch.green, np.float64)[near]),
                 ("b", np.asarray(ch.blue, np.float64)[near]),
-                ("exg", np.asarray(exg_pts[off:off + n], np.float64)[near]),
-                ("hag", np.asarray(hag_pts[off:off + n], np.float64)[near]),
+                ("exg", np.asarray(exg_pts[off : off + n], np.float64)[near]),
+                ("hag", np.asarray(hag_pts[off : off + n], np.float64)[near]),
                 ("inten", np.asarray(ch.intensity, np.float64)[near]),
             ):
                 np.add.at(sums[key], (rn, cn), vals)
@@ -93,7 +107,9 @@ def pass2_near_surface_means(g, surface, las_path=LAS_PATH, limit_chunks=None):
     means = {}
     with np.errstate(invalid="ignore"):
         for key, s in sums.items():
-            means[key] = np.divide(s, count, out=np.full(shape, np.nan), where=count > 0)
+            means[key] = np.divide(
+                s, count, out=np.full(shape, np.nan), where=count > 0
+            )
     return means, count
 
 
@@ -111,9 +127,9 @@ def write_tiles(rgb: np.ndarray, out_dir) -> list[str]:
     paths = []
     for r0 in offsets(H):
         for c0 in offsets(W):
-            tile = rgb[r0:r0 + TILE_SIZE, c0:c0 + TILE_SIZE]
+            tile = rgb[r0 : r0 + TILE_SIZE, c0 : c0 + TILE_SIZE]
             p = out_dir / f"tile_r{r0}_c{c0}.png"
-            cv2.imwrite(str(p), tile[..., ::-1])          # RGB → BGR for cv2
+            cv2.imwrite(str(p), tile[..., ::-1])  # RGB → BGR for cv2
             paths.append(str(p))
     return paths
 
@@ -168,7 +184,7 @@ def _self_check() -> None:
         if last not in offs:
             offs.append(last)
         for o in offs:
-            covered[o:o + TILE_SIZE] = True
+            covered[o : o + TILE_SIZE] = True
         assert covered.all(), f"tile gap for extent {total}"
     print("self-check OK: grid round-trip + tile coverage")
 

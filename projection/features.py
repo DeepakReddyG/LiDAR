@@ -26,14 +26,16 @@ import argparse
 import laspy
 import numpy as np
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from config import CHUNK_SIZE, DERIVED_DIR, LAS_PATH
 
 
-def run_features(las_path=LAS_PATH, out_dir=DERIVED_DIR,
-                 limit_chunks: int | None = None) -> int:
+def run_features(
+    las_path=LAS_PATH, out_dir=DERIVED_DIR, limit_chunks: int | None = None
+) -> int:
     """Stream the LAS once, write exg/intensity/nreturns memmaps.
     Returns the number of points processed."""
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -42,12 +44,15 @@ def run_features(las_path=LAS_PATH, out_dir=DERIVED_DIR,
         n_pts = f.header.point_count
         print(f"{n_pts:,} points → {out_dir}")
 
-        exg = np.lib.format.open_memmap(out_dir / "exg.npy", mode="w+",
-                                        dtype=np.float32, shape=(n_pts,))
-        intensity = np.lib.format.open_memmap(out_dir / "intensity.npy", mode="w+",
-                                              dtype=np.float32, shape=(n_pts,))
-        nreturns = np.lib.format.open_memmap(out_dir / "nreturns.npy", mode="w+",
-                                             dtype=np.uint8, shape=(n_pts,))
+        exg = np.lib.format.open_memmap(
+            out_dir / "exg.npy", mode="w+", dtype=np.float32, shape=(n_pts,)
+        )
+        intensity = np.lib.format.open_memmap(
+            out_dir / "intensity.npy", mode="w+", dtype=np.float32, shape=(n_pts,)
+        )
+        nreturns = np.lib.format.open_memmap(
+            out_dir / "nreturns.npy", mode="w+", dtype=np.uint8, shape=(n_pts,)
+        )
 
         off = 0
         for i, ch in enumerate(f.chunk_iterator(CHUNK_SIZE)):
@@ -55,25 +60,34 @@ def run_features(las_path=LAS_PATH, out_dir=DERIVED_DIR,
             r = np.asarray(ch.red, dtype=np.float32)
             g = np.asarray(ch.green, dtype=np.float32)
             b = np.asarray(ch.blue, dtype=np.float32)
-            exg[off:off + n] = (2 * g - r - b) / (r + g + b + 1e-6)
-            intensity[off:off + n] = np.asarray(ch.intensity, dtype=np.float32)
-            nreturns[off:off + n] = np.asarray(ch.number_of_returns, dtype=np.uint8)
+            exg[off : off + n] = (2 * g - r - b) / (r + g + b + 1e-6)
+            intensity[off : off + n] = np.asarray(ch.intensity, dtype=np.float32)
+            nreturns[off : off + n] = np.asarray(ch.number_of_returns, dtype=np.uint8)
             off += n
             print(f"  chunk {i + 1}: {off:,}/{n_pts:,}", flush=True)
             if limit_chunks is not None and i + 1 >= limit_chunks:
                 break
 
-        exg.flush(); intensity.flush(); nreturns.flush()
+        exg.flush()
+        intensity.flush()
+        nreturns.flush()
 
     # ExG histogram — the human gate
     hist_path = out_dir / "exg_hist.png"
     fig, ax = plt.subplots(figsize=(8, 4))
     ax.hist(exg[:off], bins=200, range=(-0.5, 1.0), log=True)
-    ax.set_xlabel("ExG"); ax.set_ylabel("points (log)")
-    ax.set_title("ExG distribution — hard-surface spike at 0 + vegetation bump ≈0.1–0.3")
-    fig.tight_layout(); fig.savefig(hist_path, dpi=100); plt.close(fig)
+    ax.set_xlabel("ExG")
+    ax.set_ylabel("points (log)")
+    ax.set_title(
+        "ExG distribution — hard-surface spike at 0 + vegetation bump ≈0.1–0.3"
+    )
+    fig.tight_layout()
+    fig.savefig(hist_path, dpi=100)
+    plt.close(fig)
     print(f"Saved {hist_path}")
-    print("INSPECT IT: veg bump present = ExG usable; flat = calibrate vetoes on eval tiles.")
+    print(
+        "INSPECT IT: veg bump present = ExG usable; flat = calibrate vetoes on eval tiles."
+    )
 
     return off
 
