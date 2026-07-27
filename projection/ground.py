@@ -32,6 +32,7 @@ from config import (
     CLOTH_RESOLUTION,
     DECIMATE_CELL,
     DERIVED_DIR,
+    DTM_GAPFILL_WINDOWS,
     GRID_META_PATH,
     GROUND_OUTLIER_FT,
     LAS_PATH,
@@ -151,7 +152,7 @@ def build_dtm(ground_xyz: np.ndarray, cell: float = DECIMATE_CELL) -> np.ndarray
     nan = np.isnan(coarse)
     vals = np.where(nan, 0.0, coarse)
     mask = (~nan).astype(np.float64)
-    for size in (5, 17, 65):
+    for size in DTM_GAPFILL_WINDOWS:
         if not np.isnan(coarse).any():
             break
         local_sum = _uniform_filter_2d(vals, size) * size * size
@@ -267,7 +268,7 @@ def _self_check() -> None:
     c = np.clip((ground[:, 0] / cell).astype(int), 0, cols - 1)
     r = np.clip(((200 - ground[:, 1]) / cell).astype(int), 0, rows - 1)
     np.fmax.at(coarse, (r, c), ground[:, 2])
-    for size in (5, 17, 65):  # same widening as build_dtm
+    for size in DTM_GAPFILL_WINDOWS:  # same widening as build_dtm
         nan = np.isnan(coarse)
         if not nan.any():
             break

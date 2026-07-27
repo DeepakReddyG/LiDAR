@@ -19,7 +19,7 @@ import argparse
 import time
 from pathlib import Path
 
-from config import GRID_META_PATH, LAS_PATH
+from config import DERIVED_DIR, GRID_META_PATH, LAS_PATH, MASKS_DIR, SLICES_DIR
 
 
 def _banner(text: str) -> None:
@@ -99,28 +99,28 @@ STAGES = {
         run_ortho,
         [
             (LAS_PATH, "LAS input"),
-            ("data/derived/exg.npy", "exg.npy (run features first)"),
-            ("data/derived/hag.npy", "hag.npy (run ground first)"),
+            (DERIVED_DIR / "exg.npy", "exg.npy (run features first)"),
+            (DERIVED_DIR / "hag.npy", "hag.npy (run ground first)"),
         ],
     ),
-    "segment": (run_segment, [("data/slices/tiles", "tiles/ (run ortho first)")]),
+    "segment": (run_segment, [(SLICES_DIR / "tiles", "tiles/ (run ortho first)")]),
     "fuse": (
         run_fuse,
         [
-            ("data/masks/conf_pavement.npy", "conf grids (run segment first)"),
-            ("data/slices/exg_grid.npy", "stat grids (run ortho first)"),
+            (MASKS_DIR / "conf_pavement.npy", "conf grids (run segment first)"),
+            (SLICES_DIR / "exg_grid.npy", "stat grids (run ortho first)"),
         ],
     ),
     "map_back": (
         run_map_back,
         [
-            ("data/masks/label_grid.npy", "label_grid.npy (run fuse first)"),
-            ("data/slices/surface_z.npy", "surface_z.npy (run ortho first)"),
+            (MASKS_DIR / "label_grid.npy", "label_grid.npy (run fuse first)"),
+            (SLICES_DIR / "surface_z.npy", "surface_z.npy (run ortho first)"),
         ],
     ),
     "baseline": (
         run_baseline,
-        [("data/derived/hag.npy", "hag.npy (run ground first)")],
+        [(DERIVED_DIR / "hag.npy", "hag.npy (run ground first)")],
     ),
 }
 

@@ -1,5 +1,13 @@
 # strategy.md — AI Implementation Strategy
 
+**Status: T0–T6 are built, committed, and shipped** (verify against `git log`
+— every task below's `/commit` message matches a real commit). This file is
+kept as the historical build-order record and the spec each stage was built
+to; only T7 (tuning against the eval bar) is ongoing work. If you're
+extending an existing stage rather than building a new one, read the stage's
+actual code first — this file describes intent at build time, `MANUAL.md`
+is kept in sync with current behavior.
+
 This file drives the implementation of the LiDAR classification pipeline
 (design: `MANUAL.md`). It is written to be handed to an AI coding assistant
 **one task at a time, in order**. Each task is a self-contained prompt with
@@ -238,7 +246,8 @@ This task absorbs `slice.py`; delete it at the end. Dependency:
 /spec
 `projection/ortho.py`, resolution 0.5 ft/px, outputs to `data/slices/`:
 - `ortho_rgb.png` — per cell, mean R,G,B of points within 1.5 ft of the
-  cell's max Z (top-surface colour). 16-bit → 8-bit via /256.
+  cell's max Z (top-surface colour). 16-bit → 8-bit via /257 (65535/255,
+  exact — not the /256 shortcut).
 - `surface_z.npy` — max Z per cell (float32).
 - `exg_grid.npy`, `hag_grid.npy`, `intensity_grid.npy` — mean per cell.
 - `void_mask.npy` — bool, cells with zero points.
@@ -346,8 +355,10 @@ Part A — `classification/fuse.py`:
    the veto-rejection rate per class to stdout and
    `data/masks/veto_stats.json`.
 3. Priority painting, first claim wins: vehicle → tree → building →
-   sidewalk → parking → road → grass.
-4. Majority filter (5×5 mode) over the painted grid to kill speckle.
+   sidewalk → parking → pavement → grass (config.py class name is
+   "pavement"; its SAM3 prompt text is "road").
+4. Majority filter (5×5 mode, `config.MAJORITY_FILTER_SIZE`) over the
+   painted grid to kill speckle.
 5. Outputs: `data/masks/label_grid.npy` ((H,W) int32, −1 unlabelled) and
    `data/masks/conf_grid.npy` (winning confidence per pixel, float32).
 

@@ -1,6 +1,6 @@
 # LiDAR Point Cloud Classification — Project Manual
 
-**Branch:** `exp` · **Status:** v2 design, v1 code in tree as reference
+**Branch:** `exp` · **Status:** v2 pipeline built and runnable (all 6 stages, T0–T6 shipped); v1 files removed, ongoing work is tuning against the eval bar (T7, §9)
 
 This manual is the single authoritative description of the project: what the
 finished system is, how it is structured, how every stage works in detail,
@@ -243,7 +243,7 @@ Outputs (`data/slices/`):
 
 - **`ortho_rgb.png`** — per cell, mean R,G,B of points within 1.5 ft of the
   cell's max Z (top-surface colour, not colour smeared through canopy).
-  16-bit → 8-bit: divide by 256.
+  16-bit → 8-bit: divide by 257 (65535 / 255, exact — not the 256 shortcut).
 - **`surface_z.npy`** — max Z per cell. This drives the Z-aware map-back.
 - **`exg_grid.npy`, `hag_grid.npy`, `intensity_grid.npy`** — mean per cell,
   for the veto stage.
@@ -322,9 +322,11 @@ hard-surface spike sits at 0, vegetation from ≈0.05–0.1 up. Calibrate on
 eval tiles.)
 
 Then paint `label_grid.npy` most-specific-first, first claim wins:
-**vehicle → tree → building → sidewalk → parking → road → grass.**
+**vehicle → tree → building → sidewalk → parking → pavement → grass**
+(config.py class name is "pavement"; its SAM3 prompt text is "road").
 
-Post-paint cleanup: one **majority filter** pass (3×3 or 5×5 mode filter)
+Post-paint cleanup: one **majority filter** pass (5×5 mode filter,
+`config.MAJORITY_FILTER_SIZE`)
 over `label_grid` to kill single-pixel speckle before it becomes thousands
 of mislabelled 3D points.
 
@@ -484,8 +486,11 @@ Improvements folded into this manual, and the deferred ones, in one place:
   confusion matrix shows road/sidewalk bleeding.
 - Multi-tile / multi-site generalisation: the chunked design already scales;
   what's missing is only per-site config.
-- Parallelising chunk passes — measure first; the passes are likely
-  IO-bound.
+- Parallelising chunk passes — **measured** (`/usr/bin/time -l` on
+  `features.py`/`ortho.py` over 100M real points): both are CPU-bound, not
+  IO-bound (user time dominates sys time in both). Still not worth
+  parallelising — the full `features`/`ortho` stages already run in 8s/35s
+  over all 411.5M points, well below any threshold worth the complexity.
 
 ---
 

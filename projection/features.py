@@ -93,16 +93,23 @@ def run_features(
 
 
 def _self_check() -> None:
-    """Run on the first chunk only; assert output sanity."""
-    n = run_features(limit_chunks=1)
-    exg = np.load(DERIVED_DIR / "exg.npy", mmap_mode="r")
-    with laspy.open(LAS_PATH) as f:
-        assert len(exg) == f.header.point_count
-    sample = exg[:n]
-    assert sample.dtype == np.float32
-    assert np.isfinite(sample).all(), "NaN/inf in ExG"
-    # normalized chromaticity bounds: 2g−r−b over r+g+b lies in [−1, 2]
-    assert (sample >= -1).all() and (sample <= 2).all(), "ExG outside [-1, 2]"
+    """Run on the first chunk only, into a throwaway directory — never the
+    real DERIVED_DIR, whose exg/intensity/nreturns memmaps are full-dataset
+    outputs this must not truncate; assert output sanity."""
+    import tempfile
+    from pathlib import Path
+
+    with tempfile.TemporaryDirectory() as tmp:
+        out_dir = Path(tmp)
+        n = run_features(out_dir=out_dir, limit_chunks=1)
+        exg = np.load(out_dir / "exg.npy", mmap_mode="r")
+        with laspy.open(LAS_PATH) as f:
+            assert len(exg) == f.header.point_count
+        sample = exg[:n]
+        assert sample.dtype == np.float32
+        assert np.isfinite(sample).all(), "NaN/inf in ExG"
+        # normalized chromaticity bounds: 2g−r−b over r+g+b lies in [−1, 2]
+        assert (sample >= -1).all() and (sample <= 2).all(), "ExG outside [-1, 2]"
     print(f"self-check OK on {n:,} points")
 
 

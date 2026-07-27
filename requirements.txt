@@ -1,7 +1,7 @@
-laspy
-numpy
-matplotlib
-pillow
-opencv-python
-cloth-simulation-filter
-requests
+laspy==2.7.0
+numpy==2.4.6
+matplotlib==3.10.9
+pillow==12.2.0
+opencv-python-headless==5.0.0.93
+cloth-simulation-filter==1.1.7
+requests==2.34.2

@@ -72,18 +72,38 @@ def segment_tile(png_path, prompts: list[str]) -> dict:
             timeout=600,
         )
         resp.raise_for_status()
+        data = resp.json()
+    except requests.Timeout:
+        raise SystemExit(
+            f"SAM3 backend timed out on tile {png_path.stem} "
+            f"({SAM3_URL}/segment_batch, timeout=600s). It may be overloaded "
+            "or stuck — check its logs and rerun; cached tiles resume "
+            "automatically."
+        )
     except requests.ConnectionError:
         raise SystemExit(
             f"SAM3 backend not reachable at {SAM3_URL}.\n"
             "Start it in its own environment:\n"
             "  cd segmentation/mlx_sam3 && uv run python app/backend/main.py"
         )
-    data = resp.json()
+    except requests.HTTPError as exc:
+        raise SystemExit(
+            f"SAM3 backend returned {resp.status_code} for tile "
+            f"{png_path.stem} ({SAM3_URL}/segment_batch): {exc}"
+        )
+    except ValueError as exc:
+        raise SystemExit(
+            f"SAM3 backend returned a non-JSON response for tile "
+            f"{png_path.stem} ({SAM3_URL}/segment_batch): {exc}\n"
+            f"Response body (first 200 chars): {resp.text[:200]!r}"
+        )
     cache.write_text(json.dumps(data))
     return data
 
 
-def tile_confidence(dets: list[dict], H: int, W: int) -> np.ndarray:
+def tile_confidence(
+    dets: list[dict], H: int, W: int, tile_name: str = "?"
+) -> np.ndarray:
     """Union instance masks into per-pixel max-score confidence. Instance
     identity is noise here — coarse civil classes need per-pixel semantics,
     and semantic union makes stitching a max instead of instance matching."""
@@ -94,6 +114,10 @@ def tile_confidence(dets: list[dict], H: int, W: int) -> np.ndarray:
             continue  # whole-image box failure mode
         mask = rle_to_mask(det["mask_rle"])
         if mask.shape != (H, W):  # mask at model res — shouldn't happen
+            print(
+                f"  WARNING {tile_name}: dropped detection, mask shape "
+                f"{mask.shape} != tile ({H}, {W})"
+            )
             continue
         np.maximum(conf, np.where(mask, np.float32(det["score"]), 0.0), out=conf)
     return conf
@@ -116,7 +140,9 @@ def run_segment_sam3() -> None:
         n_dets = sum(len(v) for v in data["results"].values())
         print(f"  {tile_path.stem}: {n_dets} detections")
         for prompt in prompts:
-            conf = tile_confidence(data["results"].get(prompt, []), H, W)
+            conf = tile_confidence(
+                data["results"].get(prompt, []), H, W, tile_name=tile_path.stem
+            )
             region = grids[prompt][r0 : r0 + H, c0 : c0 + W]
             np.maximum(region, conf[: region.shape[0], : region.shape[1]], out=region)
 

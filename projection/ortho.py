@@ -33,7 +33,9 @@ from config import (
     CHUNK_SIZE,
     DERIVED_DIR,
     GRID_META_PATH,
+    INPAINT_RADIUS_PX,
     LAS_PATH,
+    RGB_16BIT_TO_8BIT_DIVISOR,
     SLICES_DIR,
     TILE_SIZE,
     TILE_STRIDE,
@@ -148,9 +150,15 @@ def run_ortho(limit_chunks=None) -> None:
 
     # 16-bit means → 8-bit RGB, voids inpainted (Telea)
     rgb = np.stack([means["r"], means["g"], means["b"]], axis=2)
-    rgb = np.clip(np.nan_to_num(rgb) / 257.0, 0, 255).astype(np.uint8)
-    rgb = cv2.inpaint(rgb, void.astype(np.uint8), 3, cv2.INPAINT_TELEA)
-    assert not (rgb[void].sum(axis=-1) == 0).any(), "black voids survived inpaint"
+    rgb = np.clip(np.nan_to_num(rgb) / RGB_16BIT_TO_8BIT_DIVISOR, 0, 255).astype(
+        np.uint8
+    )
+    rgb = cv2.inpaint(rgb, void.astype(np.uint8), INPAINT_RADIUS_PX, cv2.INPAINT_TELEA)
+    if (rgb[void].sum(axis=-1) == 0).any():
+        raise RuntimeError(
+            "black voids survived inpaint — cv2.inpaint failed to fill every "
+            "void cell; check the void mask and inpaint radius"
+        )
 
     cv2.imwrite(str(SLICES_DIR / "ortho_rgb.png"), rgb[..., ::-1])
     np.save(SLICES_DIR / "surface_z.npy", surface)

@@ -33,12 +33,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Intentional notification test failure
-        if: github.ref == 'refs/heads/exp'
-        run: |
-          echo "::error::Intentional failure to test GitHub Actions notifications"
-          exit 1
-
       - name: Set up Python
         uses: actions/setup-python@v6
         with:

@@ -118,7 +118,7 @@ def _make_synthetic_las(path: Path, codes: np.ndarray, orig_index: np.ndarray) -
     las.write(str(path))
 
 
-if __name__ == "__main__":
+def _self_check() -> None:
     import tempfile
 
     # 100 synthetic points: 50 pavement (code 11), 50 grass (code 3).
@@ -151,4 +151,10 @@ if __name__ == "__main__":
         assert abs(result["iou"]["pavement/sidewalk/parking"] - 50 / 60) < 1e-9
         assert abs(result["iou"]["grass"] - 40 / 50) < 1e-9
 
-    print("\nSelf-check passed.")
+    print(
+        "self-check OK: perfect-match IoU=1.0, known-corruption IoU matches hand calc"
+    )
+
+
+if __name__ == "__main__":
+    _self_check()

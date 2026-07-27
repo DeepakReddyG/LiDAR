@@ -21,11 +21,14 @@ CHUNK_SIZE = 10_000_000
 DECIMATE_CELL = 2.0  # ft — lowest-Z decimation cell for CSF
 CLOTH_RESOLUTION = 2.0  # ft — CSF cloth resolution; raise if DTM embosses buildings
 GROUND_OUTLIER_FT = 5.0  # ft — drop decimated cells this far below 5×5 median
+DTM_GAPFILL_WINDOWS = (5, 17, 65)  # px — widening SAT box-filter windows for gap-fill
 
 # ── Ortho (MANUAL §6.3) ──────────────────────────────────────────────────────
 TOP_SURFACE_FT = 1.5  # ft — points within this of a cell's max Z colour the ortho
 TILE_SIZE = 1024  # px
 TILE_STRIDE = 768  # px — 25 % overlap
+RGB_16BIT_TO_8BIT_DIVISOR = 257.0  # 65535 / 255 — LAS 16-bit RGB mean → 8-bit
+INPAINT_RADIUS_PX = 3  # cv2.inpaint search radius for void-fill
 
 # ── SAM3 segmentation (MANUAL §6.4) ──────────────────────────────────────────
 SAM3_URL = "http://localhost:8000"
@@ -35,6 +38,7 @@ BBOX_FRAC_MAX = 0.8  # drop detections whose bbox covers more of the tile
 # ExG thresholds are first estimates from the sample histogram — calibrate on
 # eval tiles. High veto-rejection for a class = threshold/veto is the weak
 # link; low rejection + low IoU = the prompt is.
+MAJORITY_FILTER_SIZE = 5  # px — mode-filter window to kill single-pixel speckle
 VETO = dict(
     tree_exg=0.10,
     tree_hag=6.0,

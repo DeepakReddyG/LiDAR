@@ -21,7 +21,14 @@ import json
 
 import numpy as np
 
-from config import CLASSES, FUSE_PRIORITY, MASKS_DIR, SLICES_DIR, VETO
+from config import (
+    CLASSES,
+    FUSE_PRIORITY,
+    MAJORITY_FILTER_SIZE,
+    MASKS_DIR,
+    SLICES_DIR,
+    VETO,
+)
 
 _NAME_TO_ID = {info["name"]: cid for cid, info in CLASSES.items()}
 _THRESH = {info["name"]: info["threshold"] for info in CLASSES.values()}
@@ -49,7 +56,7 @@ def veto_mask(
     return keep & ~void
 
 
-def majority_filter(grid: np.ndarray, size: int = 5) -> np.ndarray:
+def majority_filter(grid: np.ndarray, size: int = MAJORITY_FILTER_SIZE) -> np.ndarray:
     """Mode filter over a small label alphabet, numpy-only."""
     H, W = grid.shape
     values = np.unique(grid)
@@ -82,7 +89,7 @@ def fuse(
         }
         label[(label == -1) & kept] = _NAME_TO_ID[name]
 
-    label = majority_filter(label, size=5)
+    label = majority_filter(label)
 
     conf_grid = np.zeros(shape, dtype=np.float32)
     for name, cid in _NAME_TO_ID.items():
