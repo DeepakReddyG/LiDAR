@@ -89,3 +89,9 @@ def test_fuse_priority_order_isolated():
     assert np.all(label == _NAME_TO_ID["sidewalk"]), (
         "lower-priority class won a contested region"
     )
+
+
+def test_merge_gt_parts_self_check():
+    from evaluation.merge_gt_parts import _self_check
+
+    _self_check()
