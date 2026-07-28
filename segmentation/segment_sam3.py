@@ -51,13 +51,17 @@ def rle_to_mask(rle: dict) -> np.ndarray:
 
 
 def segment_tile(png_path, prompts: list[str]) -> dict:
-    """POST one tile to /segment_batch, with a JSON cache."""
+    """POST one tile to /segment_batch, with a JSON cache.
+
+    Cache merges by prompt: re-running for new prompts keeps old results.
+    """
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     cache = RAW_DIR / (png_path.stem + ".json")
-    if cache.exists():
-        data = json.loads(cache.read_text())
-        if set(prompts) <= set(data["results"]):
-            return data
+    old = json.loads(cache.read_text()) if cache.exists() else {"results": {}}
+    old_results = old.get("results") or {}
+    if set(prompts) <= set(old_results):
+        return old
+    if old_results:
         print(f"  {png_path.stem}: cache missing prompts — re-running")
 
     import requests
@@ -97,8 +101,10 @@ def segment_tile(png_path, prompts: list[str]) -> dict:
             f"{png_path.stem} ({SAM3_URL}/segment_batch): {exc}\n"
             f"Response body (first 200 chars): {resp.text[:200]!r}"
         )
-    cache.write_text(json.dumps(data))
-    return data
+
+    merged = _merge_cache_results(old, data)
+    cache.write_text(json.dumps(merged))
+    return merged
 
 
 def tile_confidence(
@@ -146,14 +152,29 @@ def run_segment_sam3() -> None:
             region = grids[prompt][r0 : r0 + H, c0 : c0 + W]
             np.maximum(region, conf[: region.shape[0], : region.shape[1]], out=region)
 
-    for cid, info in CLASSES.items():
+    for info in CLASSES.values():
         out = MASKS_DIR / f"conf_{info['name']}.npy"
         np.save(out, grids[info["prompt"]])
         g = grids[info["prompt"]]
-        print(f"  {out.name}: coverage>{0.1} {(g > 0.1).mean():.1%}  max {g.max():.2f}")
+        print(f"  {out.name}: coverage>0.1 {(g > 0.1).mean():.1%}  max {g.max():.2f}")
+
+
+def _merge_cache_results(old: dict, data: dict) -> dict:
+    """Union per-prompt results so a partial re-run cannot wipe prior prompts."""
+    merged = {**old, **data}
+    merged["results"] = {**(old.get("results") or {}), **(data.get("results") or {})}
+    return merged
 
 
 def _self_check() -> None:
+    # Cache merge: new prompt must not erase previously cached ones
+    merged = _merge_cache_results(
+        {"results": {"road": [{"score": 0.9}]}, "width": 10},
+        {"results": {"tree": [{"score": 0.8}]}, "width": 10, "height": 10},
+    )
+    assert set(merged["results"]) == {"road", "tree"}
+    assert merged["height"] == 10
+
     # RLE round-trip against the backend's encoding scheme
     rng = np.random.default_rng(3)
     mask = rng.random((17, 23)) > 0.6
@@ -192,7 +213,7 @@ def _self_check() -> None:
     ]
     conf = tile_confidence(dets, 100, 100)
     assert conf.max() == np.float32(0.5), "whole-image box not dropped"
-    print("self-check OK: RLE round-trip, max-stitch, bbox filter")
+    print("self-check OK: cache merge, RLE round-trip, max-stitch, bbox filter")
 
 
 if __name__ == "__main__":

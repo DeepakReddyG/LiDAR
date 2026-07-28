@@ -63,7 +63,8 @@ pip install -r requirements.txt
 ```bash
 python main.py
 # Or with uvicorn directly:
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+# LAN bind (opt-in): SAM3_HOST=0.0.0.0 python main.py
 ```
 
 The backend will load the SAM3 model on startup (this may take a minute).

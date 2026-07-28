@@ -11,8 +11,8 @@ from sam3.model import box_ops
 from sam3.model.data_misc import FindStage, interpolate
 
 # TODO: remove this, using for testing
-import torch
-from torchvision.transforms import v2
+# torch/torchvision unused here — kept out of the hot import path so the
+# MLX runtime does not require them (optional [convert] extra).
 
 
 def transform(image_path_or_pil, resolution):

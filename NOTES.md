@@ -1,4 +1,5 @@
-
+> **Historical notes (pre-v2).** Superseded by [`MANUAL.md`](MANUAL.md).
+> Do not treat this file as the current pipeline spec.
 
 ## Core Project Focus
 

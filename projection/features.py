@@ -24,8 +24,8 @@ from __future__ import annotations
 import argparse
 
 import laspy
-import numpy as np
 import matplotlib
+import numpy as np
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt

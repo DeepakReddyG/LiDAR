@@ -13,13 +13,21 @@ v2 stages (design: MANUAL.md, build order: strategy.md):
 
     python main.py --stage baseline    # rule-only classifier on eval tiles
     python main.py --stage evaluate --gt <gt.las> --pred <pred.las>
+    python main.py --stage evaluate_all  # score all GT tiles vs baseline + labels.npy
 """
 
 import argparse
 import time
 from pathlib import Path
 
-from config import DERIVED_DIR, GRID_META_PATH, LAS_PATH, MASKS_DIR, SLICES_DIR
+from config import (
+    DERIVED_DIR,
+    EVAL_DIR,
+    GRID_META_PATH,
+    LAS_PATH,
+    MASKS_DIR,
+    SLICES_DIR,
+)
 
 
 def _banner(text: str) -> None:
@@ -69,6 +77,13 @@ def run_evaluate(gt_path: str, pred_path: str) -> None:
     from evaluation.evaluate import evaluate
 
     evaluate(gt_path, pred_path)
+
+
+def run_evaluate_all() -> None:
+    _banner("STAGE — evaluate_all: score all GT tiles")
+    from evaluation.evaluate import run_evaluate_all as run
+
+    run()
 
 
 def run_fuse() -> None:
@@ -127,7 +142,11 @@ STAGES = {
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="LiDAR classification pipeline (v2)")
-    parser.add_argument("--stage", choices=[*STAGES, "evaluate", "all"], default="all")
+    parser.add_argument(
+        "--stage",
+        choices=[*STAGES, "evaluate", "evaluate_all", "all"],
+        default="all",
+    )
     parser.add_argument("--gt", help="Ground-truth LAS path (--stage evaluate)")
     parser.add_argument("--pred", help="Predicted/labelled LAS path (--stage evaluate)")
     args = parser.parse_args()
@@ -142,6 +161,14 @@ def main() -> None:
         _check_file(args.gt, "ground-truth LAS (crop + hand-label first)")
         _check_file(args.pred, "predicted/labelled LAS")
         run_evaluate(args.gt, args.pred)
+        return
+
+    if args.stage == "evaluate_all":
+        _check_file(EVAL_DIR, "data/eval/ (run evaluation/crop_tiles.py first)")
+        t0 = time.time()
+        run_evaluate_all()
+        print(f"  evaluate_all done in {time.time() - t0:.1f}s")
+        print(f"\nPipeline complete in {time.time() - t_start:.1f}s")
         return
 
     names = V2_SEQUENCE if args.stage == "all" else [args.stage]

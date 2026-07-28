@@ -57,17 +57,32 @@ def veto_mask(
 
 
 def majority_filter(grid: np.ndarray, size: int = MAJORITY_FILTER_SIZE) -> np.ndarray:
-    """Mode filter over a small label alphabet, numpy-only."""
+    """Mode filter over a small label alphabet, numpy-only.
+
+    Per-class summed-area counts — O(K·H·W) instead of O(size²·K·H·W).
+    """
     H, W = grid.shape
     values = np.unique(grid)
-    pad = np.pad(grid, size // 2, mode="edge")
-    counts = np.zeros((len(values), H, W), dtype=np.int16)
-    for i in range(size):
-        for j in range(size):
-            win = pad[i : i + H, j : j + W]
-            for k, val in enumerate(values):
-                counts[k] += win == val
-    return values[counts.argmax(axis=0)].astype(grid.dtype)
+    h_lo = size // 2
+    h_hi = size - h_lo - 1
+    best_count = np.full((H, W), -1, dtype=np.int32)
+    best = grid.copy()
+    for val in values:
+        padded = np.pad(
+            (grid == val).astype(np.int32), ((h_lo, h_hi), (h_lo, h_hi)), mode="edge"
+        )
+        cs = np.zeros((H + size, W + size), dtype=np.int32)
+        cs[1:, 1:] = padded.cumsum(0).cumsum(1)
+        counts = (
+            cs[size : size + H, size : size + W]
+            - cs[:H, size : size + W]
+            - cs[size : size + H, :W]
+            + cs[:H, :W]
+        )
+        take = counts > best_count
+        best_count = np.where(take, counts, best_count)
+        best = np.where(take, val, best)
+    return best.astype(grid.dtype)
 
 
 def fuse(

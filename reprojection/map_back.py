@@ -60,6 +60,18 @@ def label_points(z, r, c, label_grid, conf_grid, surface_z, hag, exg):
     return labels, conf
 
 
+def labels_to_las_codes(labels: np.ndarray) -> np.ndarray:
+    """Map class ids to LAS codes; −1 → UNLABELLED_LAS_CODE (no index wrap)."""
+    max_id = max(_NAME_TO_ID.values())
+    code_lut = np.full(max_id + 1, UNLABELLED_LAS_CODE, np.uint8)
+    for cid, info in CLASSES.items():
+        code_lut[cid] = info["las_code"]
+    out = np.full(labels.shape, UNLABELLED_LAS_CODE, np.uint8)
+    valid = labels >= 0
+    out[valid] = code_lut[labels[valid]]
+    return out
+
+
 def run_map_back() -> None:
     meta = np.load(GRID_META_PATH)
     x_min, y_max = float(meta["x_min"]), float(meta["y_max"])
@@ -71,12 +83,6 @@ def run_map_back() -> None:
     hag_pts = np.load(DERIVED_DIR / "hag.npy", mmap_mode="r")
     exg_pts = np.load(DERIVED_DIR / "exg.npy", mmap_mode="r")
 
-    id_to_code = {cid: info["las_code"] for cid, info in CLASSES.items()}
-    id_to_code[-1] = UNLABELLED_LAS_CODE
-    code_lut = np.full(max(_NAME_TO_ID.values()) + 2, UNLABELLED_LAS_CODE, np.uint8)
-    for cid, code in id_to_code.items():
-        code_lut[cid] = code  # index −1 wraps to the last slot
-
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     out_path = OUTPUT_DIR / "labelled.las"
 
@@ -85,7 +91,8 @@ def run_map_back() -> None:
         all_labels = np.lib.format.open_memmap(
             OUTPUT_DIR / "labels.npy", mode="w+", dtype=np.int32, shape=(n_pts,)
         )
-        counts = np.zeros(len(code_lut), dtype=np.int64)
+        counts = {cid: 0 for cid in _NAME_TO_ID.values()}
+        n_unlabelled = 0
 
         with laspy.open(out_path, mode="w", header=reader.header) as writer:
             off = 0
@@ -110,12 +117,14 @@ def run_map_back() -> None:
                     np.asarray(exg_pts[off : off + n]),
                 )
 
-                ch.classification = code_lut[labels]
+                ch.classification = labels_to_las_codes(labels)
                 ch.user_data = conf
                 writer.write_points(ch)
 
                 all_labels[off : off + n] = labels
-                np.add.at(counts, labels, 1)
+                for cid in counts:
+                    counts[cid] += int((labels == cid).sum())
+                n_unlabelled += int((labels < 0).sum())
                 off += n
                 print(f"  chunk {i + 1}: {off:,}/{n_pts:,}", flush=True)
         all_labels.flush()
@@ -123,7 +132,7 @@ def run_map_back() -> None:
     print("\nPoint-cloud class distribution:")
     for name, cid in _NAME_TO_ID.items():
         print(f"  {name:<10s} {counts[cid]:>13,}  ({counts[cid] / n_pts:.2%})")
-    print(f"  unlabelled {counts[-1]:>13,}  ({counts[-1] / n_pts:.2%})")
+    print(f"  unlabelled {n_unlabelled:>13,}  ({n_unlabelled / n_pts:.2%})")
     print(f"Saved {out_path} (+ labels.npy)")
 
 
@@ -164,7 +173,13 @@ def _self_check() -> None:
         exg[:1],
     )
     assert labels2[0] == _NAME_TO_ID["tree"]  # hag 29 → tree by rule
-    print("self-check OK: canopy=tree, trunk=tree, ground split by ExG, void→rules")
+
+    codes = labels_to_las_codes(np.array([-1, _NAME_TO_ID["tree"]], np.int32))
+    assert codes[0] == UNLABELLED_LAS_CODE
+    assert codes[1] == CLASSES[_NAME_TO_ID["tree"]]["las_code"]
+    print(
+        "self-check OK: canopy=tree, trunk=tree, ground split by ExG, void→rules, LUT"
+    )
 
 
 if __name__ == "__main__":

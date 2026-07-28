@@ -39,15 +39,15 @@ BBOX_FRAC_MAX = 0.8  # drop detections whose bbox covers more of the tile
 # eval tiles. High veto-rejection for a class = threshold/veto is the weak
 # link; low rejection + low IoU = the prompt is.
 MAJORITY_FILTER_SIZE = 5  # px — mode-filter window to kill single-pixel speckle
-VETO = dict(
-    tree_exg=0.10,
-    tree_hag=6.0,
-    grass_exg=0.05,
-    grass_hag=2.0,
-    building_hag=8.0,
-    pavement_hag=1.5,  # also sidewalk / parking
-    vehicle_hag=(1.0, 9.0),
-)
+VETO = {
+    "tree_exg": 0.10,
+    "tree_hag": 6.0,
+    "grass_exg": 0.05,
+    "grass_hag": 2.0,
+    "building_hag": 8.0,
+    "pavement_hag": 1.5,  # also sidewalk / parking
+    "vehicle_hag": (1.0, 9.0),
+}
 # most-specific first; first claim wins
 FUSE_PRIORITY = [
     "vehicle",
@@ -60,24 +60,24 @@ FUSE_PRIORITY = [
 ]
 
 # ── Z-aware map-back (MANUAL §6.6) ───────────────────────────────────────────
-MAP_BACK = dict(
-    surface_ft=3.0,  # |z − surface_z| below this = the pixel's 2D label
-    below_tree_hag=2.0,  # below-surface: taller → tree (trunk/understory)
-    below_grass_exg=0.05,  # below-surface ground: green → grass, else pavement
-    rule_conf=128,  # user_data for rule-labelled (non-SAM3) points
-)
+MAP_BACK = {
+    "surface_ft": 3.0,  # |z − surface_z| below this = the pixel's 2D label
+    "below_tree_hag": 2.0,  # below-surface: taller → tree (trunk/understory)
+    "below_grass_exg": 0.05,  # below-surface ground: green → grass, else pavement
+    "rule_conf": 128,  # user_data for rule-labelled (non-SAM3) points
+}
 
 # ── Rule-only baseline (T3) ──────────────────────────────────────────────────
 # Standalone classifier thresholds — NOT the §6.5 veto table (vetoes assume
 # SAM3 already claimed the class; standalone rules need tighter conjunctions).
-BASELINE = dict(
-    veg_exg=0.05,  # ExG above this = vegetated
-    hard_exg=0.05,  # ExG at/below this = hard surface
-    tree_hag=6.0,  # vegetated and taller than this = tree
-    grass_hag=2.0,  # vegetated and lower than this = grass
-    building_hag=8.0,  # hard surface taller than this = building
-    pavement_hag=1.5,  # hard surface lower than this = pavement
-)
+BASELINE = {
+    "veg_exg": 0.05,  # ExG above this = vegetated
+    "hard_exg": 0.05,  # ExG at/below this = hard surface
+    "tree_hag": 6.0,  # vegetated and taller than this = tree
+    "grass_hag": 2.0,  # vegetated and lower than this = grass
+    "building_hag": 8.0,  # hard surface taller than this = building
+    "pavement_hag": 1.5,  # hard surface lower than this = pavement
+}
 
 # ── Class table (MANUAL §5) ─────────────────────────────────────────────────
 # id -> name, SAM3 text prompt, starting confidence threshold, LAS class code.

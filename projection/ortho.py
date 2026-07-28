@@ -45,13 +45,13 @@ from config import (
 
 def _grid() -> dict:
     m = np.load(GRID_META_PATH)
-    return dict(
-        x_min=float(m["x_min"]),
-        y_max=float(m["y_max"]),
-        resolution=float(m["resolution"]),
-        rows=int(m["rows"]),
-        cols=int(m["cols"]),
-    )
+    return {
+        "x_min": float(m["x_min"]),
+        "y_max": float(m["y_max"]),
+        "resolution": float(m["resolution"]),
+        "rows": int(m["rows"]),
+        "cols": int(m["cols"]),
+    }
 
 
 def _cell_idx(x, y, g):
@@ -146,7 +146,7 @@ def run_ortho(limit_chunks=None) -> None:
     print(f"  {void.mean():.1%} void cells")
 
     print("pass 2/2 — near-surface means …")
-    means, count = pass2_near_surface_means(g, surface, limit_chunks=limit_chunks)
+    means, _count = pass2_near_surface_means(g, surface, limit_chunks=limit_chunks)
 
     # 16-bit means → 8-bit RGB, voids inpainted (Telea)
     rgb = np.stack([means["r"], means["g"], means["b"]], axis=2)

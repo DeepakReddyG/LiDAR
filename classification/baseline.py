@@ -17,6 +17,7 @@ and add nothing measurable. Scores against tile_*_gt.las when present.
 from __future__ import annotations
 
 import json
+import math
 
 import laspy
 import numpy as np
@@ -101,7 +102,7 @@ def run_baseline() -> None:
         out.write_text(json.dumps(scores, indent=2))
         print(f"\nSaved {out}")
         for name, iou in scores.items():
-            assert any(v > 0 for v in iou.values() if v == v), (
+            assert any(v > 0 for v in iou.values() if not math.isnan(v)), (
                 f"tile {name}: all IoU zero — rules or matching wired wrong"
             )
 

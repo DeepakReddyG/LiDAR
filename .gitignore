@@ -32,3 +32,17 @@ data/slices/surface_z.npy
 data/slices/ortho_rgb.png
 data/slices/void_mask.npy
 data/slices/tiles/
+
+# v1 leftovers (do not re-add)
+data/slices/elevation_grid.npy
+data/slices/elevation_grid_raw.npy
+data/slices/top_down.png
+data/masks/masks.npy
+data/masks/mask_meta.npy
+data/masks/class_labels.npy
+data/masks/*_overlay.png
+data/masks/overlay.png
+data/output/labelled_points.npz
+
+# stray virtualenv
+.env/

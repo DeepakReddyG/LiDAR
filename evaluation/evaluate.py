@@ -11,6 +11,8 @@ SAM3 prompts feed into it.
 
 from __future__ import annotations
 
+import json
+import math
 from pathlib import Path
 
 import laspy
@@ -95,7 +97,9 @@ def evaluate(gt_path: str | Path, pred_path: str | Path) -> dict:
     )
     print("\nPer-class IoU:")
     for label, v in iou.items():
-        print(f"  {label:<28s} {v:.3f}" if v == v else f"  {label:<28s}   n/a")
+        print(
+            f"  {label:<28s} {v:.3f}" if not math.isnan(v) else f"  {label:<28s}   n/a"
+        )
 
     print("\nConfusion matrix (rows=GT, cols=pred):")
     print(" " * 14 + "".join(f"{lb[:12]:>14s}" for lb in labels))
@@ -103,6 +107,74 @@ def evaluate(gt_path: str | Path, pred_path: str | Path) -> dict:
         print(f"{lb[:12]:>14s}" + "".join(f"{conf[i, j]:>14d}" for j in range(n)))
 
     return {"iou": iou, "confusion_matrix": conf.tolist(), "labels": labels}
+
+
+def _pred_from_labels_npy(tile_path: Path, out_path: Path, labels_npy: Path) -> Path:
+    """Stamp pipeline class ids from labels.npy onto an eval tile via orig_index."""
+    from reprojection.map_back import labels_to_las_codes
+
+    tile = laspy.read(tile_path)
+    idx = np.asarray(tile.orig_index)
+    all_labels = np.load(labels_npy, mmap_mode="r")
+    tile.classification = labels_to_las_codes(np.asarray(all_labels[idx]))
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    tile.write(str(out_path))
+    return out_path
+
+
+def run_evaluate_all() -> dict:
+    """Score every eval tile that has a GT against baseline and (if present) labels.npy."""
+    from config import EVAL_DIR, EVAL_TILE_BOUNDS, OUTPUT_DIR
+
+    baseline_scores: dict = {}
+    sam3_scores: dict = {}
+    n_gt = 0
+    labels_npy = OUTPUT_DIR / "labels.npy"
+
+    for name in EVAL_TILE_BOUNDS:
+        gt_path = EVAL_DIR / f"tile_{name}_gt.las"
+        if not gt_path.exists():
+            print(
+                f"  [no GT] {gt_path.name} missing — hand-label in CloudCompare "
+                f"(see evaluation/crop_tiles.py instructions / REMAINING_FIXES_PLAN Task H1)"
+            )
+            continue
+        n_gt += 1
+
+        baseline_path = EVAL_DIR / f"tile_{name}_baseline.las"
+        if baseline_path.exists():
+            print(f"\nBaseline tile {name}:")
+            baseline_scores[name] = evaluate(gt_path, baseline_path)["iou"]
+        else:
+            print(
+                f"  [skip baseline] {baseline_path.name} missing — run --stage baseline"
+            )
+
+        tile_path = EVAL_DIR / f"tile_{name}.las"
+        if labels_npy.exists() and tile_path.exists():
+            pred_path = EVAL_DIR / f"tile_{name}_sam3.las"
+            print(f"\nSAM3 tile {name} (from labels.npy via orig_index):")
+            _pred_from_labels_npy(tile_path, pred_path, labels_npy)
+            sam3_scores[name] = evaluate(gt_path, pred_path)["iou"]
+        elif not labels_npy.exists():
+            print(f"  [skip SAM3] {labels_npy} missing — run --stage map_back")
+
+    if n_gt == 0:
+        raise SystemExit(
+            "No ground-truth tiles found under data/eval/tile_*_gt.las.\n"
+            "Hand-label the cropped tiles in CloudCompare first (Task H1)."
+        )
+
+    if baseline_scores:
+        out = EVAL_DIR / "baseline_scores.json"
+        out.write_text(json.dumps(baseline_scores, indent=2))
+        print(f"\nSaved {out}")
+    if sam3_scores:
+        out = EVAL_DIR / "sam3_scores.json"
+        out.write_text(json.dumps(sam3_scores, indent=2))
+        print(f"Saved {out}")
+
+    return {"baseline": baseline_scores, "sam3": sam3_scores}
 
 
 def _make_synthetic_las(path: Path, codes: np.ndarray, orig_index: np.ndarray) -> None:

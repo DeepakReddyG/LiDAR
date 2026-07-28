@@ -18,16 +18,16 @@
 
 | Task | Title | Priority | Status | Notes |
 |---|---|---|---|---|
-| H1 | Hand-label eval tiles (CloudCompare) | Critical | Not Started | Human only |
-| 1 | Delete v1 leftover artifacts under `data/` | High | Not Started | |
-| 2 | Fix `segment_sam3` cache clobber + f-string | Medium | Not Started | |
-| 3 | Replace `map_back` negative-index LUT | Medium | Not Started | |
-| 4 | Add `--stage evaluate_all` multi-tile scoring | High | Not Started | Depends on H1 for real scores; code can ship first |
-| 5 | Bind SAM3 backend to `127.0.0.1` by default | Medium | Not Started | |
-| 6 | Make torch/torchvision optional in mlx_sam3 | Medium | Not Started | |
-| 7 | Optimize `majority_filter` (keep numpy-only) | Medium | Not Started | |
-| 8 | Archive/mark `NOTES.md` as historical | Low | Not Started | |
-| 9 | Verify remote CI green after commit/push | High | Not Started | Needs push |
+| H1 | Hand-label eval tiles (CloudCompare) | Critical | Not Started | Human only — still blocking IoU |
+| 1 | Delete v1 leftover artifacts under `data/` | High | Completed | Deleted ~1.6GB leftovers; `.gitignore` updated |
+| 2 | Fix `segment_sam3` cache clobber + f-string | Medium | Completed | Merge-by-prompt + self-check; f-string fixed |
+| 3 | Replace `map_back` negative-index LUT | Medium | Completed | `labels_to_las_codes()` — no −1 wrap |
+| 4 | Add `--stage evaluate_all` multi-tile scoring | High | Completed | Scores baseline + labels.npy via orig_index; clear message if no GT |
+| 5 | Bind SAM3 backend to `127.0.0.1` by default | Medium | Completed | `SAM3_HOST` / `SAM3_PORT` env opt-in |
+| 6 | Make torch/torchvision optional in mlx_sam3 | Medium | Completed | Lazy import in `convert()`; unused imports removed; `[convert]` extra |
+| 7 | Optimize `majority_filter` (keep numpy-only) | Medium | Completed | SAT per-class counts O(K·H·W) |
+| 8 | Archive/mark `NOTES.md` as historical | Low | Completed | Banner pointing to MANUAL.md |
+| 9 | Verify remote CI green after commit/push | High | Blocked | Needs user commit + push — not done this session |
 | H2 | Purge large blobs from git history | High | Not Started | Human approval |
 | H3 | Resolve `exp` / `main` / `dev` divergence | High | Not Started | Human decision |
 | H4 | mlx_sam3 submodule / demo-asset cleanup | Optional | Not Started | Human decision |
