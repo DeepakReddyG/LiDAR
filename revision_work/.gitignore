@@ -1,0 +1,6 @@
+runs/
+archive/
+__pycache__/
+*.las
+*.npz
+*.npy
