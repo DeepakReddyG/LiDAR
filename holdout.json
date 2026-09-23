@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-23T23:51:03.797053+00:00",
+  "branch": "revision/2026-09-23",
+  "base_exp_commit": "0bd9c693ee4b0c8fce3e9d67b56124b551c5d7b0",
+  "status": "LOCKED_UNTIL_PHASE_5",
+  "coordinate_units": "US survey foot",
+  "coordinate_reference_system": "UNKNOWN - needs provider/PI",
+  "selection": "Deterministic central 40 x 30 ft subregions of the already documented A/B bounding boxes; no new point, image, label, prediction or score inspection used. Whole parent tiles are protected context.",
+  "prior_exposure": "A/B appeared in historical whole-scene figures before this protocol. This is a prospective tuning holdout, not a claim of historically unseen imagery.",
+  "bounds_convention": "xmin <= x < xmax and ymin <= y < ymax; all heights",
+  "regions": [
+    {
+      "id": "holdout_a",
+      "source_candidate": "data/eval/tile_a_gt.las",
+      "protected_bounds": [
+        1390954.38,
+        447810.05,
+        1391104.38,
+        447960.05
+      ],
+      "scoring_bounds": [
+        1391009.38,
+        447870.05,
+        1391049.38,
+        447900.05
+      ]
+    },
+    {
+      "id": "holdout_b",
+      "source_candidate": "data/eval/tile_b_gt.las",
+      "protected_bounds": [
+        1391169.38,
+        447785.05,
+        1391319.38,
+        447935.05
+      ],
+      "scoring_bounds": [
+        1391224.38,
+        447845.05,
+        1391264.38,
+        447875.05
+      ]
+    }
+  ],
+  "development": {
+    "id": "pilot_c",
+    "scoring_bounds": [
+      1391205.0,
+      448075.0,
+      1391245.0,
+      448105.0
+    ],
+    "allowed_context_bounds": [
+      1391184.38,
+      448035.05,
+      1391334.38,
+      448185.05
+    ]
+  },
+  "rules": [
+    "Before Phase 5 do not open, hash, visualize, infer, score, or use cached content from A/B; only this published box metadata may be read.",
+    "Development preprocessing/inference must use tile C only and reject overlap with protected boxes. No survey-wide caches may be used.",
+    "Freeze final manifest and commit before Phase 5. The gate records a single irreversible consumption event.",
+    "If independent reference labels are absent, create prediction-hidden annotation exports and stop evaluation; no estimated accuracy.",
+    "Never author or modify reference labels."
+  ]
+}
