@@ -1,0 +1,13 @@
+{
+  "config.py": "5b43711285f15174f94e9d8f9360279c511fee5d3991449e61c63027e8db295d",
+  "main.py": "68fef150646e28554f1c706e334f54b02e5be6539d5192fd670b26abf4b08195",
+  "projection/features.py": "73d79b022ef802b2bdf4ece3e2be19af211de6d0b8291ccef015f12f63fbd381",
+  "projection/ground.py": "9600228d4ac75b7f28b5f4b93ee039b544616ff2813f7fb7f06ed9a64270413c",
+  "projection/ortho.py": "c3a4532393c76b875cfe27d3deddc8a386a81079762156b6a98af15dfa32c439",
+  "projection/grid.py": "0082eb683e22dd1b0f94d513d8e8695dc4b75811f6b73c74e8717697d7f52c0b",
+  "classification/baseline.py": "d08a3ff2ed3b6400f0692292cfd2cbb2c67d6eadd16d5863c2827c65284e5383",
+  "classification/fuse.py": "f493794add2ac339dabca609ee09ee62e26fd5f800cc3f5873bdaa7ddde06764",
+  "reprojection/map_back.py": "f1c0e87d4aef8d3fe95b1c3ff150123ea76e9fe3e5b43a77a2c2b3ffef255d5a",
+  "segmentation/segment_sam3.py": "b9884058db5ceb3d88494be96e9be049577cd208a0c5ef9c0b9bac50ffc03fd4",
+  "evaluation/evaluate.py": "36ead5c4f128e2ffb2949352ed61d6cdfab7f0c596dedf05225a23b0416f5c44"
+}

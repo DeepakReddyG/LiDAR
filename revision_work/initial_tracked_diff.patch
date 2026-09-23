@@ -1,0 +1,645 @@
+diff --git a/.gitignore b/.gitignore
+index dea038c..c749945 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -46,3 +46,9 @@ data/output/labelled_points.npz
+ 
+ # stray virtualenv
+ .env/
++
++# Local professor meeting packets and supporting documents
++/docs/
++
++# Consolidated local research drafts and supporting resources
++/research_paper_documents_and_drafts/
+diff --git a/CONTRIBUTING.md b/CONTRIBUTING.md
+index 271bcf2..16c5d7e 100644
+--- a/CONTRIBUTING.md
++++ b/CONTRIBUTING.md
+@@ -4,7 +4,7 @@ This repo needs **two separate Python environments**. Mixing them (installing ev
+ 
+ ## 1. Root pipeline environment
+ 
+-Runs `main.py` and every stage except `segment` (`features`, `ground`, `ortho`, `fuse`, `map_back`, `baseline`, `evaluate`).
++Runs `main.py` and every stage except `segment` (`grid`, `features`, `ground`, `ortho`, `fuse`, `map_back`, `baseline`, `evaluate`, `evaluate_all`).
+ 
+ ```bash
+ python3.11 -m venv .venv
+@@ -23,6 +23,16 @@ ruff check classification evaluation projection reprojection segmentation/segmen
+ 
+ `tests/test_self_checks.py` wires up every pipeline module's own `--self-check`. One check (`features.py`'s) reads the real source LAS file if it's present locally and is skipped automatically when it isn't (e.g. on CI runners) — it never writes to the real `data/derived/` directory either way.
+ 
++`tests/test_pipeline_contracts.py` covers grid creation and conflict detection,
++real grid/features/ground/ortho execution on temporary synthetic terrain, and
++partial annotation through merging and baseline/pipeline scoring. These tests
++use temporary outputs and do not require SAM3 or the survey dataset.
++
++`tests/test_annotation.py` checks safe local-ID preparation, original-record
++restoration from shuffled subsets, invalid ID/reference rejection, and class-part
++merge safeguards. Real CloudCompare export probes are separate local evidence;
++the automated tests do not launch the GUI or establish semantic label accuracy.
++
+ ## 2. SAM3 segmentation backend
+ 
+ Only needed for `main.py --stage segment` (or `--stage all`). This is a separate, `uv`-managed project at `segmentation/mlx_sam3/` — see [`segmentation/mlx_sam3/README.md`](segmentation/mlx_sam3/README.md) for its own feature set and details.
+diff --git a/MANUAL.md b/MANUAL.md
+index 33f0804..dc41bc2 100644
+--- a/MANUAL.md
++++ b/MANUAL.md
+@@ -164,6 +164,21 @@ against `evaluate.py` numbers. They live in `config.py` and are applied in
+ 
+ ## 6. Stage-by-stage specification
+ 
++### Grid setup — `projection/grid.py`
++
++`main.py --stage all` begins with `grid`, before the six processing stages.
++It reads only the LAS header and writes `data/slices/grid_meta.npz` from its
++XY bounds and `config.GRID_RESOLUTION` (0.5 US survey feet per pixel).
++The origin is `(x_min, y_max)`; rows increase southward. Rows and columns use
++ceiling division of the extent by resolution, with a minimum of one cell.
++Consumers clip points exactly on the far boundary to the last cell.
++
++An existing matching grid is left untouched. A conflicting grid raises an
++error: cached rasters/masks must never silently be paired with a different
++mapping. Use a separate data directory and rebuild dependent artifacts when
++changing the survey or grid. For individual stages, run `--stage grid` before
++`ground` or `ortho`; orthophoto generation consumes the grid, it does not create it.
++
+ ### 6.0 `evaluation/evaluate.py` — build FIRST (≈1 day)
+ 
+ "Not effective" must become a number before any threshold is tuned.
+@@ -171,17 +186,71 @@ against `evaluate.py` numbers. They live in `config.py` and are applied in
+ 1. **Crop 3 tiles** (~150 × 150 ft each, a chunked laspy XY filter):
+    (a) road + parking, (b) buildings, (c) trees over ground. A few million
+    points each.
+-2. **Stamp provenance before labelling.** Write each cropped point's original
+-   index into an extra byte/int field (or keep a sidecar `orig_index.npy`).
+-   Point order is **not** guaranteed to survive CloudCompare's
+-   segment-and-save cycle, and silent misalignment would poison every IoU
+-   number the entire tuning loop depends on. Match on the stamped index (or,
+-   as a fallback, on rounded XYZ), never on file order.
+-3. **Hand-label in CloudCompare** (segment tool → classification code), 2–3 h
+-   total → `data/eval/tile_{a,b,c}_gt.las`.
++2. **Prepare safe identity transport.** `crop_tiles.py` stamps each original
++   survey index as `orig_index`. Keep this reference tile outside CloudCompare.
++   Installed CloudCompare 2.13.2 changed 1,773 of 2,048 sampled global IDs on
++   import/export despite retaining the uint32 field. Use `evaluation.annotation
++   prepare` to replace that field in a separate copy with small `tile_index`
++   values and save a manifest identifying the unchanged reference by SHA-256.
++   Copies are limited to 2^24 points (float32-exact IDs); tile_a needs subdivision.
++3. **Hand-label a defined region in CloudCompare.** Open the prepared copy,
++   retain `tile_index`, and preserve the global coordinate shift on save.
++   Segment each class into its own LAS file, retaining the extra field on export.
++   Restore exact original records with `evaluation.annotation restore`, then
++   use `merge_gt_parts` to stamp classes from part filenames. Never match by file
++   order or guess identities from nearby XYZ. The restoration rejects invalid
++   IDs, changed references, and coordinates differing by more than 0.01 ft.
+ 4. **`evaluate.py`** (~60–80 lines): load GT tile + any labelled LAS, align
+    by stamped index, print per-class IoU and a confusion matrix.
+ 
++Example commands from the repository root (use new output names for a new run):
++
++```bash
++.venv/bin/python -m evaluation.annotation prepare \
++  --reference data/eval/tile_c.las \
++  --output docs/annotation_pilot/prepared/tile_c_annotation.las
++# In CloudCompare, export tree points as docs/annotation_pilot/exports/tree.las.
++.venv/bin/python -m evaluation.annotation restore \
++  --export docs/annotation_pilot/exports/tree.las \
++  --manifest docs/annotation_pilot/prepared/tile_c_annotation.json \
++  --output data/eval/gt_parts/tile_c_tree.las
++.venv/bin/python -m evaluation.merge_gt_parts c
++.venv/bin/python main.py --stage evaluate_all
++```
++
++Repeat restoration for `grass` or another configured class before merging.
++The merger rejects unknown IDs, coordinate mismatches, duplicate identities,
++conflicting class assignments, and overwriting an existing GT tile. The stored
++full-tile reference fills untouched points with code 1. Generic ground/bare soil
++is not a target class: ground points must have a supported semantic class or
++remain unannotated; do not infer grass from low height alone. Check canopy and
++ground separately in side views because a top-view cut selects both layers.
++Record the region bounds, class rules, ambiguous exclusions, and counts before
++scoring. The local command-line export/filter/restore path has been verified;
++a user-drawn polygon followed by GUI BIN save, command-line LAS conversion, and
++restoration has also passed for 1,974 points with exact original records. Direct
++GUI LAS export remains unverified. On the current Mac, disable **Use native load /
++save dialogs** under Display settings > Other options to make Save work. The
++verified GUI workflow saves one selected class cloud as BIN and converts it:
++
++```bash
++/Applications/CloudCompare.app/Contents/MacOS/CloudCompare \
++  -SILENT -AUTO_SAVE OFF -O docs/annotation_pilot/exports/tree.bin \
++  -C_EXPORT_FMT LAS -SAVE_CLOUDS FILE docs/annotation_pilot/exports/tree.las
++```
++
++Use the restoration command above on the resulting LAS. A filename extension
++alone does not select the export format. Use new output paths for revisions.
++
++**Partial-annotation contract.** After point matching, exclude GT codes 0
++(unclassified) and 1 (unassigned) from both sides of the comparison. The ignore
++mask depends only on GT: predicting code 0 or 1 on an annotated point still
++counts as an error. Return and print matched/scored/ignored counts; fail with
++a clear error if no annotated matches remain. This applies to direct
++`evaluate` and to both baseline and pipeline predictions in `evaluate_all`.
++Unlabelled GT is not a semantic target. Scores apply only to annotated matched
++points, so annotation coverage and selection must accompany research claims.
++
+ Realistic bars on this data: pavement & tree IoU > 0.8, building > 0.7,
+ grass > 0.6; vehicle is the hardest. Every change to a prompt, threshold, or
+ veto is judged by this script and nothing else.
+@@ -259,8 +328,9 @@ Outputs (`data/slices/`):
+   ~1700 × 2100 px → ~6 tiles. Tiling matters because a car is ~30 × 15 px;
+   downscaling the whole ortho into SAM3's input resolution would shrink it
+   below detectability.
+-- `grid_meta.npz` — x_min, y_min, resolution, rows, cols (v1 format,
+-  unchanged).
++
++Input `grid_meta.npz` comes from grid setup: x_min, y_min, x_max, y_max,
++resolution, rows, cols (the existing mapping is preserved).
+ 
+ ### 6.4 `segmentation/segment_sam3.py` + the mlx_sam3 endpoint (≈1–2 days)
+ 
+@@ -336,6 +406,24 @@ whether SAM3 or the thresholds are the weak link.
+ Outputs: `data/masks/label_grid.npy` (`(H, W) int32`, −1 = unlabelled),
+ `data/masks/conf_grid.npy` (winning confidence per pixel, for §6.6).
+ 
++An isolated experiment is available through `fuse(..., tree_height_check=True)`.
++It requires finite tree-pixel HAG above the existing 6 ft threshold, and rejects
++inconsistent tree labels introduced by smoothing by restoring the supported
++pre-smoothing label (possibly unlabelled). It is **off by default** and is not
++enabled by `main.py --stage fuse`. On the first reviewed development pilot it
++removed grass-to-tree predictions but increased total errors, so it has not
++been adopted. This is a tree-only consistency experiment, not a physical check
++for every smoothed class. Saved production masks and predictions remain intact.
++
++`fuse(..., physical_smoothing=True)` is a separate, default-off experiment.
++It reapplies each proposed class's existing physical veto after smoothing and
++retains the supported pre-smoothing label when the proposal is invalid or
++unlabelled. It can be combined with `tree_height_check=True`. Both tested
++variants increased errors on the first pilot. With smoothing alone, all 160
++lost correct grass predictions failed the existing pixel greenness threshold,
++not the height check. This result does not justify applying strict color vetoes
++after smoothing or enabling either option in the normal pipeline.
++
+ ### 6.6 `reprojection/map_back.py` — Z-aware, chunked (≈1 day)
+ 
+ Keep v1's grid indexing and chunked LAS writing; fix the column bug. Per
+@@ -371,8 +459,9 @@ numpy consumers.
+ 
+ ### 6.7 `main.py` + `config.py` — orchestration
+ 
+-Keep the `--stage` CLI shape. Stages: `features`, `ground`, `ortho`,
+-`segment`, `fuse`, `map_back`, `evaluate` (+ `all`). Each stage checks its
++Keep the `--stage` CLI shape. Stages: `grid`, `features`, `ground`, `ortho`,
++`segment`, `fuse`, `map_back`, `baseline`, `evaluate`, `evaluate_all` (+ `all`).
++`all` runs grid setup followed by the six processing stages. Each stage checks its
+ input files exist and fails with a message naming the stage that produces
+ them. `config.py` holds every path, prompt, threshold, and veto rule — v1
+ duplicated paths across four files; never again.
+@@ -388,7 +477,7 @@ duplicated paths across four files; never again.
+ | `data/slices/ortho_rgb.png` + `tiles/` | ortho.py | segment_sam3 | uint8 RGB |
+ | `data/slices/surface_z.npy` | ortho.py | map_back | `(H, W)` float32 |
+ | `data/slices/{exg,hag,intensity}_grid.npy`, `void_mask.npy` | ortho.py | fuse | `(H, W)` |
+-| `data/slices/grid_meta.npz` | ortho.py | segment_sam3, map_back, evaluate | x_min, y_min, resolution, rows, cols |
++| `data/slices/grid_meta.npz` | grid.py (setup) | ground, ortho, segment_sam3, map_back | x_min, y_min, x_max, y_max, resolution, rows, cols |
+ | `data/masks/conf_<class>.npy` | segment_sam3.py | fuse | `(H, W)` float32, raw scores |
+ | `data/masks/label_grid.npy`, `conf_grid.npy` | fuse.py | map_back | `(H, W)` int32 / float32 |
+ | `data/output/labelled.las` | map_back.py | evaluate, CloudCompare/Potree | LAS + classification + user_data |
+@@ -444,6 +533,7 @@ cd segmentation/mlx_sam3/app/backend && python main.py
+ # run everything
+ python main.py --stage all
+ # or stage by stage
++python main.py --stage grid
+ python main.py --stage features
+ python main.py --stage ground
+ python main.py --stage ortho
+diff --git a/README.md b/README.md
+index 9e057b7..81abb15 100644
+--- a/README.md
++++ b/README.md
+@@ -38,7 +38,10 @@ Raw point cloud data is difficult to process directly due to massive data size,
+ 
+ ## The Pipeline (Shipped)
+ 
+-The pipeline is a six-stage CLI driven entirely by `config.py`:
++The pipeline is a six-stage CLI driven entirely by `config.py`, preceded by
++`grid` setup: derive the shared pixel/world mapping from the LAS header at
++`GRID_RESOLUTION` (default 0.5 US survey feet per pixel). Matching grid metadata
++is preserved; conflicting metadata stops the run before processing.
+ 
+ 1. **`features`** — per-point spectral features (ExG vegetation index, intensity, returns)
+ 2. **`ground`** — CSF ground filter → DTM → per-point Height Above Ground
+@@ -86,6 +89,7 @@ cd segmentation/mlx_sam3 && uv run python app/backend/main.py
+ 
+ # then, from the repo root, in the main .venv:
+ python main.py --stage all                # run the full 6-stage pipeline
++python main.py --stage grid               # initialize/validate the shared grid
+ python main.py --stage features           # or run a single stage
+ python main.py --stage ground
+ python main.py --stage ortho
+@@ -95,10 +99,29 @@ python main.py --stage map_back
+ 
+ python main.py --stage baseline           # rule-only classifier on eval tiles
+ python main.py --stage evaluate --gt <gt.las> --pred <pred.las>
++python main.py --stage evaluate_all       # score available GT tiles vs both methods
+ ```
+ 
+ Each stage checks its own prerequisites (per `main.py`'s `STAGES` table) and fails fast with a clear message naming the missing file if you run stages out of order.
+ 
++`all` runs grid setup first, so no metadata from an earlier run is required.
++When running stages individually, run `grid` before `ground` and `ortho`.
++
++Evaluation supports partial annotation: matched ground-truth points with LAS
++codes 0 or 1 are excluded from both IoU and the confusion matrix. Unlabelled
++predictions on annotated ground truth still count as errors. The evaluator
++reports matched, scored, and ignored point counts, and refuses to score a tile
++with no annotated matches. Scores describe only the annotated portion; they do
++not establish accuracy on the rest of the tile or survey.
++
++For CloudCompare annotation, first create a safe copy with
++`python -m evaluation.annotation prepare --reference data/eval/tile_c.las --output docs/annotation_pilot/prepared/tile_c_annotation.las`.
++The original tile stays authoritative. CloudCompare rounds large `orig_index`
++values in this dataset; keep the prepared copy's small `tile_index` field during
++export, then run `evaluation.annotation restore` before `evaluation.merge_gt_parts`.
++See [MANUAL §6.0](MANUAL.md#60-evaluationevaluatepy--build-first-1-day) for the
++complete workflow. Preparation and restoration refuse to overwrite files.
++
+ ---
+ 
+ ## Important Notes
+diff --git a/classification/fuse.py b/classification/fuse.py
+index c68e7ca..f4b8eaf 100644
+--- a/classification/fuse.py
++++ b/classification/fuse.py
+@@ -86,16 +86,34 @@ def majority_filter(grid: np.ndarray, size: int = MAJORITY_FILTER_SIZE) -> np.nd
+ 
+ 
+ def fuse(
+-    conf: dict[str, np.ndarray], exg: np.ndarray, hag: np.ndarray, void: np.ndarray
++    conf: dict[str, np.ndarray],
++    exg: np.ndarray,
++    hag: np.ndarray,
++    void: np.ndarray,
++    *,
++    tree_height_check: bool = False,
++    physical_smoothing: bool = False,
+ ) -> tuple[np.ndarray, np.ndarray, dict]:
+-    """Pure core: confidence grids → (label_grid, conf_grid, veto_stats)."""
++    """Fuse confidence grids; optionally test height-consistent tree labels.
++
++    The opt-in experiment uses the existing tree height threshold. It rejects
++    low/unknown-height tree claims, and prevents smoothing from restoring them.
++    A rejected smoothed tree reverts to the supported pre-smoothing label,
++    which may be unlabelled. With physical_smoothing, every proposed class must
++    pass its existing physical veto, and smoothing cannot erase a supported
++    label with an unlabelled vote. Rejected proposals retain the pre-smoothing
++    label. Both options are off by default and can be tested independently.
++    """
+     shape = next(iter(conf.values())).shape
+     label = np.full(shape, -1, dtype=np.int32)
+     stats = {}
++    tree_allowed = np.isfinite(hag) & (hag > VETO["tree_hag"]) & ~void
+ 
+     for name in FUSE_PRIORITY:
+         claimed = conf[name] >= _THRESH[name]
+         kept = claimed & veto_mask(name, exg, hag, void)
++        if tree_height_check and name == "tree":
++            kept &= tree_allowed
+         n_claim, n_kept = int(claimed.sum()), int(kept.sum())
+         stats[name] = {
+             "claimed_px": n_claim,
+@@ -104,7 +122,19 @@ def fuse(
+         }
+         label[(label == -1) & kept] = _NAME_TO_ID[name]
+ 
++    before_smoothing = label
+     label = majority_filter(label)
++    if physical_smoothing:
++        accept = np.zeros(shape, dtype=bool)
++        for name, cid in _NAME_TO_ID.items():
++            allowed = veto_mask(name, exg, hag, void)
++            if tree_height_check and name == "tree":
++                allowed &= tree_allowed
++            accept |= (label == cid) & allowed
++        label = np.where(accept, label, before_smoothing)
++    elif tree_height_check:
++        invalid_tree = (label == _NAME_TO_ID["tree"]) & ~tree_allowed
++        label[invalid_tree] = before_smoothing[invalid_tree]
+ 
+     conf_grid = np.zeros(shape, dtype=np.float32)
+     for name, cid in _NAME_TO_ID.items():
+diff --git a/config.py b/config.py
+index 0e857b8..3ed571a 100644
+--- a/config.py
++++ b/config.py
+@@ -14,6 +14,7 @@ EVAL_DIR = REPO_ROOT / "data/eval"
+ OUTPUT_DIR = REPO_ROOT / "data/output"
+ 
+ GRID_META_PATH = SLICES_DIR / "grid_meta.npz"
++GRID_RESOLUTION = 0.5  # US survey feet per pixel
+ 
+ CHUNK_SIZE = 10_000_000
+ 
+@@ -94,6 +95,10 @@ CLASSES = {
+     6: {"name": "vehicle", "prompt": "car", "threshold": 0.50, "las_code": 64},
+ }
+ UNLABELLED_LAS_CODE = 1
++# Applied to ground truth only; unlabelled predictions still count as errors.
++EVAL_IGNORE_GT_CODES = (0, UNLABELLED_LAS_CODE)
++ANNOTATION_MAX_POINTS = 2**24  # tile_index stays exactly representable in float32
++ANNOTATION_XYZ_TOLERANCE = 0.01  # ft; reject moved points or the wrong reference tile
+ 
+ # ── Eval tiles (MANUAL §6.0) ─────────────────────────────────────────────────
+ # 150×150 ft boxes picked visually from data/slices/top_down.png
+diff --git a/evaluation/crop_tiles.py b/evaluation/crop_tiles.py
+index 7922c33..6dfbdda 100644
+--- a/evaluation/crop_tiles.py
++++ b/evaluation/crop_tiles.py
+@@ -83,13 +83,13 @@ def main() -> None:
+     print(
+         "\n"
+         "MANUAL STEP — hand-label these tiles in CloudCompare:\n"
+-        "  1. Open each data/eval/tile_{a,b,c}.las\n"
+-        "  2. Segment tool → assign classification codes per MANUAL §5\n"
+-        "     (11=pavement/sidewalk/parking, 3=grass, 5=tree, 6=building,\n"
+-        "      64=vehicle, 1=unassigned)\n"
+-        "  3. Save as data/eval/tile_{a,b,c}_gt.las\n"
+-        "     (CloudCompare may reorder points — that's fine, orig_index\n"
+-        "      survives and evaluate.py aligns on it, never file order)\n"
++        "  1. Create a safe copy with evaluation.annotation prepare.\n"
++        "     Keep original tiles outside CloudCompare; large orig_index\n"
++        "     values are rounded on export. Copies over 2^24 points need subdivision.\n"
++        "  2. Segment class parts and export LAS with tile_index retained.\n"
++        "  3. Recover exact orig_index with evaluation.annotation restore.\n"
++        "  4. Assemble restored parts with evaluation.merge_gt_parts.\n"
++        "     See MANUAL §6.0 for commands, class rules, and validation.\n"
+     )
+ 
+ 
+diff --git a/evaluation/evaluate.py b/evaluation/evaluate.py
+index d250301..20d1ce8 100644
+--- a/evaluation/evaluate.py
++++ b/evaluation/evaluate.py
+@@ -7,6 +7,10 @@ Classes are keyed by LAS classification code, not by config.py class id:
+ pavement/sidewalk/parking share LAS code 11 (no standard LAS code tells them
+ apart), so they are necessarily one evaluation bucket regardless of how many
+ SAM3 prompts feed into it.
++
++After matching points, GT codes 0 and 1 are excluded from all scoring. An
++unlabelled prediction on annotated GT is still an error. No score is produced
++when none of the matched GT points are annotated.
+ """
+ 
+ from __future__ import annotations
+@@ -18,7 +22,7 @@ from pathlib import Path
+ import laspy
+ import numpy as np
+ 
+-from config import CLASSES, UNLABELLED_LAS_CODE
++from config import CLASSES, EVAL_IGNORE_GT_CODES, UNLABELLED_LAS_CODE
+ 
+ 
+ def _code_names(classes: dict = CLASSES) -> dict[int, str]:
+@@ -63,6 +67,16 @@ def evaluate(gt_path: str | Path, pred_path: str | Path) -> dict:
+ 
+     gt_codes = np.asarray(gt.classification)[gi]
+     pred_codes = np.asarray(pred.classification)[pi]
++    annotated = ~np.isin(gt_codes, EVAL_IGNORE_GT_CODES)
++    n_scored = int(annotated.sum())
++    n_ignored = n_common - n_scored
++    if n_scored == 0:
++        raise ValueError(
++            "No annotated ground-truth points among matched points "
++            f"(GT codes {EVAL_IGNORE_GT_CODES} are ignored)"
++        )
++    gt_codes = gt_codes[annotated]
++    pred_codes = pred_codes[annotated]
+ 
+     names = _code_names()
+     codes = sorted(
+@@ -95,6 +109,7 @@ def evaluate(gt_path: str | Path, pred_path: str | Path) -> dict:
+     print(
+         f"Matched {n_common:,} points ({'orig_index' if has_index else 'XYZ fallback'})"
+     )
++    print(f"Scored {n_scored:,} annotated points; ignored {n_ignored:,} GT points")
+     print("\nPer-class IoU:")
+     for label, v in iou.items():
+         print(
+@@ -106,7 +121,14 @@ def evaluate(gt_path: str | Path, pred_path: str | Path) -> dict:
+     for i, lb in enumerate(labels):
+         print(f"{lb[:12]:>14s}" + "".join(f"{conf[i, j]:>14d}" for j in range(n)))
+ 
+-    return {"iou": iou, "confusion_matrix": conf.tolist(), "labels": labels}
++    return {
++        "iou": iou,
++        "confusion_matrix": conf.tolist(),
++        "labels": labels,
++        "matched_points": n_common,
++        "scored_points": n_scored,
++        "ignored_gt_points": n_ignored,
++    }
+ 
+ 
+ def _pred_from_labels_npy(tile_path: Path, out_path: Path, labels_npy: Path) -> Path:
+@@ -182,7 +204,8 @@ def _make_synthetic_las(path: Path, codes: np.ndarray, orig_index: np.ndarray) -
+     header.add_extra_dim(laspy.ExtraBytesParams(name="orig_index", type=np.uint32))
+     las = laspy.LasData(header)
+     n = len(codes)
+-    las.x = np.arange(n, dtype=np.float64)
++    # Identity-based coordinates keep shuffled/subset fixtures physically aligned.
++    las.x = orig_index.astype(np.float64)
+     las.y = np.zeros(n, dtype=np.float64)
+     las.z = np.zeros(n, dtype=np.float64)
+     las.classification = codes.astype(np.uint8)
+diff --git a/evaluation/merge_gt_parts.py b/evaluation/merge_gt_parts.py
+index e132f87..91aef34 100644
+--- a/evaluation/merge_gt_parts.py
++++ b/evaluation/merge_gt_parts.py
+@@ -9,10 +9,12 @@ own file, then let this script stamp the codes.
+     data/eval/gt_parts/tile_c_grass.las     -> LAS code 3
+     ...                                     -> data/eval/tile_c_gt.las
+ 
+-Points not present in any part stay UNLABELLED_LAS_CODE, so partial labelling
+-is valid: unlabelled GT points simply never enter an IoU union.
++Points not present in any part stay UNLABELLED_LAS_CODE. The evaluator ignores
++GT codes 0 and 1 after matching points, so partial labelling is valid. Errors
++on annotated points still count; scores describe only the annotated portion.
+ 
+-Parts are matched to the full tile by orig_index, never by file order.
++First restore CloudCompare exports with evaluation.annotation. Restored parts
++are matched to the full tile by orig_index, never by file order.
+ """
+ 
+ from __future__ import annotations
+@@ -23,7 +25,7 @@ from pathlib import Path
+ import laspy
+ import numpy as np
+ 
+-from config import CLASSES, EVAL_DIR, UNLABELLED_LAS_CODE
++from config import ANNOTATION_XYZ_TOLERANCE, CLASSES, EVAL_DIR, UNLABELLED_LAS_CODE
+ 
+ # Part filename suffix -> LAS code. pavement/sidewalk/parking all map to 11,
+ # so either name works for a hard-surface cut.
+@@ -39,6 +41,9 @@ def merge_gt_parts(
+     tile_path = eval_dir / f"tile_{tile}.las"
+     if not tile_path.exists():
+         raise SystemExit(f"{tile_path} missing — run evaluation/crop_tiles.py first")
++    out = eval_dir / f"tile_{tile}_gt.las"
++    if out.exists():
++        raise FileExistsError(f"Refusing to overwrite existing ground truth: {out}")
+ 
+     parts = sorted(parts_dir.glob(f"tile_{tile}_*.las"))
+     if not parts:
+@@ -51,6 +56,10 @@ def merge_gt_parts(
+     if "orig_index" not in las.point_format.dimension_names:
+         raise SystemExit(f"{tile_path} has no orig_index — recrop with crop_tiles.py")
+     tile_idx = np.asarray(las.orig_index)
++    if not len(tile_idx):
++        raise ValueError("Reference tile contains no points")
++    if len(np.unique(tile_idx)) != len(tile_idx):
++        raise ValueError("Reference tile has duplicate orig_index values")
+     order = np.argsort(tile_idx)
+ 
+     codes = np.full(len(tile_idx), UNLABELLED_LAS_CODE, np.uint8)
+@@ -64,10 +73,12 @@ def merge_gt_parts(
+         p = laspy.read(part)
+         if "orig_index" not in p.point_format.dimension_names:
+             raise SystemExit(
+-                f"{part.name} lost orig_index on export — re-save from CloudCompare "
+-                f"keeping the extra dimension, or the GT cannot be aligned"
++                f"{part.name} has no orig_index — run evaluation.annotation restore "
++                "on the CloudCompare export before merging"
+             )
+         p_idx = np.asarray(p.orig_index)
++        if len(np.unique(p_idx)) != len(p_idx):
++            raise ValueError(f"{part.name}: duplicate orig_index values")
+ 
+         # Locate each part point in the tile by orig_index (sorted searchsorted).
+         pos = np.searchsorted(tile_idx, p_idx, sorter=order)
+@@ -75,18 +86,33 @@ def merge_gt_parts(
+         hit = order[pos]
+         found = tile_idx[hit] == p_idx
+         if not found.all():
+-            print(f"  [warn] {part.name}: {(~found).sum():,} points not in tile")
++            raise ValueError(
++                f"{part.name}: {(~found).sum():,} IDs not in reference tile"
++            )
++
++        for dim in ("x", "y", "z"):
++            if not np.allclose(
++                np.asarray(getattr(las, dim))[hit],
++                np.asarray(getattr(p, dim)),
++                rtol=0,
++                atol=ANNOTATION_XYZ_TOLERANCE,
++            ):
++                raise ValueError(f"{part.name}: coordinates disagree with orig_index")
+ 
+         target = hit[found]
+         clash = (codes[target] != UNLABELLED_LAS_CODE) & (codes[target] != code)
+         if clash.any():
+-            print(f"  [warn] {part.name}: {clash.sum():,} points overlap another part")
++            raise ValueError(
++                f"{part.name}: {clash.sum():,} points have conflicting classes"
++            )
+         codes[target] = code
+         print(f"  {part.name:<34s} -> code {code:<3d} {found.sum():>10,} points")
+ 
+     las.classification = codes
+-    out = eval_dir / f"tile_{tile}_gt.las"
+-    las.write(str(out))
++    if not np.any(codes != UNLABELLED_LAS_CODE):
++        raise ValueError("No annotated points found in recognized class parts")
++    with out.open("xb") as stream:
++        las.write(stream)
+ 
+     labelled = (codes != UNLABELLED_LAS_CODE).sum()
+     print(
+diff --git a/main.py b/main.py
+index f8e8a5e..1fffd9f 100644
+--- a/main.py
++++ b/main.py
+@@ -3,13 +3,14 @@ main.py — LiDAR Point Cloud Classification Pipeline (v2, MANUAL.md)
+ 
+ v2 stages (design: MANUAL.md, build order: strategy.md):
+ 
++    python main.py --stage grid        # shared grid from LAS header (setup)
+     python main.py --stage features    # per-point ExG / intensity / returns
+     python main.py --stage ground      # CSF ground filter → DTM → HAG
+     python main.py --stage ortho       # RGB nadir ortho + stat grids + tiles
+     python main.py --stage segment     # SAM3 text prompts → confidence grids
+     python main.py --stage fuse        # thresholds + physics veto → label grid
+     python main.py --stage map_back    # Z-aware labels → labelled.las
+-    python main.py --stage all         # all six, in order
++    python main.py --stage all         # grid setup, then all six in order
+ 
+     python main.py --stage baseline    # rule-only classifier on eval tiles
+     python main.py --stage evaluate --gt <gt.las> --pred <pred.las>
+@@ -37,6 +38,13 @@ def _banner(text: str) -> None:
+ # ── v2 stage runners ─────────────────────────────────────────────────────────
+ 
+ 
++def run_grid() -> None:
++    _banner("SETUP — grid.py: shared pixel/world grid from LAS header")
++    from projection.grid import run_grid as run
++
++    run()
++
++
+ def run_features() -> None:
+     _banner("STAGE — features.py: per-point ExG / intensity / returns")
+     from projection.features import run_features as run
+@@ -102,18 +110,20 @@ def run_map_back() -> None:
+ 
+ # ── CLI ──────────────────────────────────────────────────────────────────────
+ 
+-V2_SEQUENCE = ["features", "ground", "ortho", "segment", "fuse", "map_back"]
++V2_SEQUENCE = ["grid", "features", "ground", "ortho", "segment", "fuse", "map_back"]
+ 
+ STAGES = {
++    "grid": (run_grid, [(LAS_PATH, "LAS input")]),
+     "features": (run_features, [(LAS_PATH, "LAS input")]),
+     "ground": (
+         run_ground,
+-        [(LAS_PATH, "LAS input"), (GRID_META_PATH, "grid_meta.npz (run ortho first)")],
++        [(LAS_PATH, "LAS input"), (GRID_META_PATH, "grid_meta.npz (run grid first)")],
+     ),
+     "ortho": (
+         run_ortho,
+         [
+             (LAS_PATH, "LAS input"),
++            (GRID_META_PATH, "grid_meta.npz (run grid first)"),
+             (DERIVED_DIR / "exg.npy", "exg.npy (run features first)"),
+             (DERIVED_DIR / "hag.npy", "hag.npy (run ground first)"),
+         ],
+diff --git a/projection/ortho.py b/projection/ortho.py
+index 4f84084..6c33e62 100644
+--- a/projection/ortho.py
++++ b/projection/ortho.py
+@@ -16,7 +16,8 @@ Outputs (data/slices/):
+     void_mask.npy     (H, W) bool — cells with zero points; labels there are
+                       vetoed at fuse time
+     tiles/tile_r{row0}_c{col0}.png — 1024×1024 crops, stride 768
+-    grid_meta.npz     x_min, y_min, x_max, y_max, resolution, rows, cols
++
++Requires grid_meta.npz from the grid setup stage (bounds, resolution, rows, cols).
+ 
+ HUMAN GATE: ortho_rgb.png must look like an aerial photo.
+ """
+diff --git a/tests/test_self_checks.py b/tests/test_self_checks.py
+index 5d8ba2c..2d23bb4 100644
+--- a/tests/test_self_checks.py
++++ b/tests/test_self_checks.py
+@@ -9,6 +9,12 @@ import pytest
+ from config import LAS_PATH
+ 
+ 
++def test_grid_self_check():
++    from projection.grid import _self_check
++
++    _self_check()
++
++
+ def test_ground_self_check():
+     from projection.ground import _self_check
+ 
