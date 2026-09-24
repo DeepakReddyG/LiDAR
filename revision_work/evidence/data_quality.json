@@ -1,0 +1,395 @@
+{
+  "acquisition_date": "UNKNOWN - needs provider/PI",
+  "color_registration_accuracy": "UNKNOWN - needs provider/PI",
+  "colorization": "UNKNOWN - needs provider/PI",
+  "created_utc": "2026-09-24T00:09:27.194957+00:00",
+  "dtm_grid": {
+    "accuracy": "Not evaluated: no independent terrain checkpoints or ground reference; finite support is not vertical accuracy",
+    "finite_cells": 90000,
+    "finite_dtm_cells_without_input_points": 11,
+    "finite_elevation_ft": {
+      "max": 872.3286743164062,
+      "mean": 869.53369140625,
+      "median": 868.779052734375,
+      "min": 866.7756958007812,
+      "p90": 871.8392333984375,
+      "p99": 872.1142608642579
+    },
+    "finite_fraction": 1.0,
+    "input_empty_cells": 11,
+    "input_occupied_cells": 89989,
+    "nonfinite_cells": 0,
+    "observed_ground_support_mask": "NOT SAVED by Phase 1 pipeline; cannot distinguish observed-ground/interpolated/fallback-filled terrain cells from final DTM alone",
+    "resolution_ft": 0.5,
+    "shape": [
+      300,
+      300
+    ]
+  },
+  "limitations": [
+    "One fixed development context and one nested pilot, not independent sites.",
+    "High XY point counts include multiple heights, vertical surfaces and potential acquisition overlap; points are not independent observations.",
+    "Observed RGB storage endpoints and code patterns do not establish optical saturation, bit-depth provenance, colorization method or registration accuracy.",
+    "Negative HAG and DTM coverage are descriptive residual/support checks; no absolute or relative terrain accuracy is claimed.",
+    "Acquisition and color-registration provenance require provider/PI confirmation."
+  ],
+  "protocol_hashes": {
+    "holdout_sha256": "121696648105e06a0571da19529e8f6eb03e2d8fb47fe4939a95fc6263e9637a",
+    "objective_sha256": "aa34e52612c2f08601199513df4a5fb84528f9dac1efae6136da9d956a9554ee"
+  },
+  "purpose": "M5 descriptive quality evidence on fixed development data; no experiment selection",
+  "radiometric_encoding": "UNKNOWN - needs provider/PI",
+  "reference_or_prediction_data_read": false,
+  "regions": {
+    "context_c": {
+      "all_points_per_rectangle_sqft": 111.37386666666667,
+      "density_1ft_xy_cells": {
+        "cell_size_ft": 1.0,
+        "counts_in_all_cells": {
+          "max": 4120.0,
+          "mean": 111.37386666666667,
+          "median": 94.0,
+          "min": 0.0,
+          "p90": 176.0,
+          "p99": 347.0
+        },
+        "counts_in_occupied_cells": {
+          "max": 4120.0,
+          "mean": 111.37881683630384,
+          "median": 94.0,
+          "min": 7.0,
+          "p90": 176.0,
+          "p99": 347.0
+        },
+        "empty_cells": 1,
+        "interpretation": "counts include all heights/overlapping surfaces; not independent spatial observations or a surface sampling rate",
+        "occupancy_fraction": 0.9999555555555556,
+        "occupied_cells": 22499,
+        "origin": [
+          1391184.38,
+          448035.05
+        ],
+        "shape_rows_columns": [
+          150,
+          150
+        ],
+        "total_cells": 22500
+      },
+      "dtm_at_point_locations": {
+        "finite_count": 2505912,
+        "finite_fraction": 1.0,
+        "interpretation": "finite coverage of generated DTM; may include interpolated/global-minimum-filled cells and does not establish measured-ground support"
+      },
+      "fixed_rectangle_area_sqft": 22500.0,
+      "fixed_xy_bounds": [
+        1391184.38,
+        448035.05,
+        1391334.38,
+        448185.05
+      ],
+      "hag_ft": {
+        "finite_count": 2505912,
+        "finite_statistics": {
+          "max": 54.24360275268555,
+          "mean": 10.763423919677734,
+          "median": 0.36134248971939087,
+          "min": -2.6312437057495117,
+          "p90": 31.268865966796874,
+          "p99": 48.64762504577638
+        },
+        "interpretation": "z minus generated terrain estimate; negative values are observed residuals, not a direct accuracy estimate",
+        "negative_count": 99211,
+        "negative_fraction_all_points": 0.03959077573354531,
+        "nonfinite_count": 0,
+        "point_count": 2505912,
+        "zero_count": 0
+      },
+      "observed_xyz_extent_ft": [
+        149.99900000006892,
+        149.9990000000107,
+        56.67000000000007
+      ],
+      "observed_xyz_max": [
+        1391334.3793071404,
+        448185.0495098971,
+        922.753416953068
+      ],
+      "observed_xyz_min": [
+        1391184.3803071403,
+        448035.05050989706,
+        866.083416953068
+      ],
+      "point_count": 2505912,
+      "rgb": {
+        "channels": {
+          "blue": {
+            "distinct_stored_values": 60019,
+            "divisibility_interpretation": "descriptive stored-value pattern only; source bit depth/encoding not established",
+            "fraction_values_divisible_by_256": 0.03500561871286781,
+            "fraction_values_divisible_by_257": 0.05293082917516657,
+            "storage_max_65535_count": 286,
+            "storage_max_65535_rate": 0.00011413010512739474,
+            "stored_integer_statistics": {
+              "max": 65535.0,
+              "mean": 19600.90753067147,
+              "median": 16750.0,
+              "min": 0.0,
+              "p90": 36920.0,
+              "p99": 56380.0
+            },
+            "value_255_count": 14,
+            "value_255_rate": 5.586788362879463e-06,
+            "zero_count": 78565,
+            "zero_rate": 0.03135185912354464
+          },
+          "green": {
+            "distinct_stored_values": 60560,
+            "divisibility_interpretation": "descriptive stored-value pattern only; source bit depth/encoding not established",
+            "fraction_values_divisible_by_256": 0.006550110299164536,
+            "fraction_values_divisible_by_257": 0.025222354176842602,
+            "storage_max_65535_count": 354,
+            "storage_max_65535_rate": 0.00014126593431852355,
+            "stored_integer_statistics": {
+              "max": 65535.0,
+              "mean": 25163.15775773451,
+              "median": 25595.0,
+              "min": 0.0,
+              "p90": 37762.0,
+              "p99": 57184.0
+            },
+            "value_255_count": 61,
+            "value_255_rate": 2.4342435009689086e-05,
+            "zero_count": 7110,
+            "zero_rate": 0.0028372903757194986
+          },
+          "red": {
+            "distinct_stored_values": 60966,
+            "divisibility_interpretation": "descriptive stored-value pattern only; source bit depth/encoding not established",
+            "fraction_values_divisible_by_256": 0.0237518316684704,
+            "fraction_values_divisible_by_257": 0.0419432126906292,
+            "storage_max_65535_count": 422,
+            "storage_max_65535_rate": 0.00016840176350965238,
+            "stored_integer_statistics": {
+              "max": 65535.0,
+              "mean": 24593.6749830002,
+              "median": 24977.0,
+              "min": 0.0,
+              "p90": 37979.0,
+              "p99": 57609.0
+            },
+            "value_255_count": 58,
+            "value_255_rate": 2.3145266074786345e-05,
+            "zero_count": 50382,
+            "zero_rate": 0.02010525509275665
+          }
+        },
+        "endpoint_caveat": "65535 is the unsigned 16-bit storage endpoint; 255 is not treated as saturation. Physical optical saturation, original radiometric bit depth, gamma, encoding and color registration remain UNKNOWN - needs provider/PI.",
+        "point_level_counts": {
+          "all_channels_at_most_255": 5544,
+          "all_channels_at_storage_max_65535": 241,
+          "all_channels_zero": 1400,
+          "any_channel_at_storage_max_65535": 513,
+          "any_channel_zero": 87118
+        },
+        "point_level_rates": {
+          "all_channels_at_most_255": 0.0022123681917002674,
+          "all_channels_at_storage_max_65535": 9.617257110385361e-05,
+          "all_channels_zero": 0.0005586788362879463,
+          "any_channel_at_storage_max_65535": 0.0002047158878683689,
+          "any_channel_zero": 0.03476498775695236
+        },
+        "storage_type": "unsigned 16-bit channels"
+      }
+    },
+    "pilot_c": {
+      "all_points_per_rectangle_sqft": 132.18166666666667,
+      "density_1ft_xy_cells": {
+        "cell_size_ft": 1.0,
+        "counts_in_all_cells": {
+          "max": 425.0,
+          "mean": 132.18166666666667,
+          "median": 118.0,
+          "min": 24.0,
+          "p90": 243.0,
+          "p99": 376.05999999999995
+        },
+        "counts_in_occupied_cells": {
+          "max": 425.0,
+          "mean": 132.18166666666667,
+          "median": 118.0,
+          "min": 24.0,
+          "p90": 243.0,
+          "p99": 376.05999999999995
+        },
+        "empty_cells": 0,
+        "interpretation": "counts include all heights/overlapping surfaces; not independent spatial observations or a surface sampling rate",
+        "occupancy_fraction": 1.0,
+        "occupied_cells": 1200,
+        "origin": [
+          1391205.0,
+          448075.0
+        ],
+        "shape_rows_columns": [
+          30,
+          40
+        ],
+        "total_cells": 1200
+      },
+      "dtm_at_point_locations": {
+        "finite_count": 158618,
+        "finite_fraction": 1.0,
+        "interpretation": "finite coverage of generated DTM; may include interpolated/global-minimum-filled cells and does not establish measured-ground support"
+      },
+      "fixed_rectangle_area_sqft": 1200.0,
+      "fixed_xy_bounds": [
+        1391205.0,
+        448075.0,
+        1391245.0,
+        448105.0
+      ],
+      "hag_ft": {
+        "finite_count": 158618,
+        "finite_statistics": {
+          "max": 54.01185607910156,
+          "mean": 19.452394485473633,
+          "median": 18.63687229156494,
+          "min": -0.4385635256767273,
+          "p90": 47.861368560791014,
+          "p99": 51.580917282104494
+        },
+        "interpretation": "z minus generated terrain estimate; negative values are observed residuals, not a direct accuracy estimate",
+        "negative_count": 1636,
+        "negative_fraction_all_points": 0.010314087934534541,
+        "nonfinite_count": 0,
+        "point_count": 158618,
+        "zero_count": 0
+      },
+      "observed_xyz_extent_ft": [
+        39.99899999983609,
+        29.99900000001071,
+        55.644000000000005
+      ],
+      "observed_xyz_max": [
+        1391244.9993071402,
+        448104.9995098971,
+        922.3244169530681
+      ],
+      "observed_xyz_min": [
+        1391205.0003071404,
+        448075.0005098971,
+        866.6804169530681
+      ],
+      "point_count": 158618,
+      "rgb": {
+        "channels": {
+          "blue": {
+            "distinct_stored_values": 28395,
+            "divisibility_interpretation": "descriptive stored-value pattern only; source bit depth/encoding not established",
+            "fraction_values_divisible_by_256": 0.09025457388190496,
+            "fraction_values_divisible_by_257": 0.16959613663014286,
+            "storage_max_65535_count": 1,
+            "storage_max_65535_rate": 6.304454727710601e-06,
+            "stored_integer_statistics": {
+              "max": 65535.0,
+              "mean": 14650.884256515654,
+              "median": 15672.0,
+              "min": 0.0,
+              "p90": 24461.0,
+              "p99": 32639.0
+            },
+            "value_255_count": 0,
+            "value_255_rate": 0.0,
+            "zero_count": 13811,
+            "zero_rate": 0.08707082424441111
+          },
+          "green": {
+            "distinct_stored_values": 35951,
+            "divisibility_interpretation": "descriptive stored-value pattern only; source bit depth/encoding not established",
+            "fraction_values_divisible_by_256": 0.00409159111828418,
+            "fraction_values_divisible_by_257": 0.08676190596275328,
+            "storage_max_65535_count": 4,
+            "storage_max_65535_rate": 2.5217818910842403e-05,
+            "stored_integer_statistics": {
+              "max": 65535.0,
+              "mean": 23485.71533495568,
+              "median": 25911.0,
+              "min": 0.0,
+              "p90": 35455.0,
+              "p99": 42662.0
+            },
+            "value_255_count": 2,
+            "value_255_rate": 1.2608909455421201e-05,
+            "zero_count": 71,
+            "zero_rate": 0.0004476162856674526
+          },
+          "red": {
+            "distinct_stored_values": 37639,
+            "divisibility_interpretation": "descriptive stored-value pattern only; source bit depth/encoding not established",
+            "fraction_values_divisible_by_256": 0.044963371118032,
+            "fraction_values_divisible_by_257": 0.12665019102497824,
+            "storage_max_65535_count": 5,
+            "storage_max_65535_rate": 3.1522273638553e-05,
+            "stored_integer_statistics": {
+              "max": 65535.0,
+              "mean": 22034.19207782219,
+              "median": 24042.5,
+              "min": 0.0,
+              "p90": 36010.0,
+              "p99": 43988.82999999999
+            },
+            "value_255_count": 6,
+            "value_255_rate": 3.7826728366263604e-05,
+            "zero_count": 6644,
+            "zero_rate": 0.04188679721090923
+          }
+        },
+        "endpoint_caveat": "65535 is the unsigned 16-bit storage endpoint; 255 is not treated as saturation. Physical optical saturation, original radiometric bit depth, gamma, encoding and color registration remain UNKNOWN - needs provider/PI.",
+        "point_level_counts": {
+          "all_channels_at_most_255": 286,
+          "all_channels_at_storage_max_65535": 1,
+          "all_channels_zero": 17,
+          "any_channel_at_storage_max_65535": 8,
+          "any_channel_zero": 13905
+        },
+        "point_level_rates": {
+          "all_channels_at_most_255": 0.0018030740521252316,
+          "all_channels_at_storage_max_65535": 6.304454727710601e-06,
+          "all_channels_zero": 0.0001071757303710802,
+          "any_channel_at_storage_max_65535": 5.0435637821684805e-05,
+          "any_channel_zero": 0.0876634429888159
+        },
+        "storage_type": "unsigned 16-bit channels"
+      }
+    }
+  },
+  "schema_version": 1,
+  "script_sha256": "d57985ddbbc638f01264572afba709a47f4114b5e180771d56f377e895748eff",
+  "sensor": "UNKNOWN - needs provider/PI",
+  "source_hashes": {
+    "derived/dtm.npy": "1b7e8725a7aa4952ddc1f523fdf3a43b2601eac18ad35626f4295d360b356b1c",
+    "derived/hag.npy": "f46189764efb50252cddd086813eeb909c46eb900d15d5682a30763378fbfe28",
+    "input.las": "4052f08a0785b61e28db98e5ce2b2614729047efe9d35d705bf5a0394edc97dc",
+    "manifest.json": "b56ee7f1c96781ca690b1d8081d8779a68cfe15641d66ac0121e52bf0be7d3c7",
+    "preprocessing.json": "465463689a6be4ca7d0de4d6bbb6927ca2d543f82a7d5472110406dcc6f7befd",
+    "slices/grid_meta.npz": "5d01661ef49232c6c349b2b0bb14da23ab1a926d6bf7d0ae8de9b27a387ba6d4"
+  },
+  "source_run": "revision_work/runs/phase1_fresh",
+  "units": {
+    "axes": [],
+    "configured_coordinate_units": "US survey foot",
+    "configured_unit_to_metre": 0.3048006096012192,
+    "configured_unit_to_metre_exact": "1200/3937",
+    "coordinates_rescaled": false,
+    "crs": "UNKNOWN - needs provider/PI",
+    "crs_wkt": null,
+    "horizontal_units_status": "assumed; CRS absent",
+    "input_assumption": "US survey foot",
+    "metadata_source": "LAS header has no declared CRS",
+    "provider_confirmation_required": true,
+    "schema_version": 1,
+    "vertical_datum": "UNKNOWN - needs provider/PI",
+    "vertical_datum_basis": "No CRS supplied or declared",
+    "vertical_units_status": "assumed; CRS absent"
+  },
+  "units_validator_sha256": "2b165c33c009727897d6303756cb18c3cb7eac3dd760839255409d0609396b06"
+}

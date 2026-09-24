@@ -1,0 +1,887 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-24T00:10:31.991345+00:00",
+  "development_only": true,
+  "holdout_accessed": false,
+  "script_sha256": "b978912e950eabf0ae16176eaee896612662fa53f5229bfbf18a7b94c64417d9",
+  "old_run": "revision_work/runs/phase1_fresh",
+  "new_run": "revision_work/runs/fixed_anchor",
+  "provenance": {
+    "old": {
+      "manifest_sha256": "b56ee7f1c96781ca690b1d8081d8779a68cfe15641d66ac0121e52bf0be7d3c7",
+      "protocol": {
+        "holdout_sha256": "121696648105e06a0571da19529e8f6eb03e2d8fb47fe4939a95fc6263e9637a",
+        "objective_sha256": "aa34e52612c2f08601199513df4a5fb84528f9dac1efae6136da9d956a9554ee"
+      },
+      "source_git_commit": "84f877f5585b55dec576705d817175174a5ce434",
+      "source_root": "revision_work/source_snapshot",
+      "model_checkpoint_sha256": "0ad4c3f42ecf706c4cda63cf58d621699491ed65012b3999284ea370984f7173",
+      "input_sha256_verified": "2fbb019d7c6438f696339f1d5715a0c0d5b157fc603b54021e3f3153aef4680f",
+      "reference_sha256_verified": "24380bb9533881236c39584c1cd61ded990bdaba174579466267ac75b5c9b035",
+      "current_source_hash_checks": {
+        "revision_work/source_snapshot/classification/baseline.py": true,
+        "revision_work/source_snapshot/classification/fuse.py": true,
+        "revision_work/source_snapshot/config.py": true,
+        "revision_work/source_snapshot/evaluation/evaluate.py": true,
+        "revision_work/source_snapshot/main.py": true,
+        "revision_work/source_snapshot/projection/features.py": true,
+        "revision_work/source_snapshot/projection/grid.py": true,
+        "revision_work/source_snapshot/projection/ground.py": true,
+        "revision_work/source_snapshot/projection/ortho.py": true,
+        "revision_work/source_snapshot/reprojection/map_back.py": true,
+        "revision_work/source_snapshot/segmentation/segment_sam3.py": true,
+        "segmentation/mlx_sam3/sam3/__init__.py": true,
+        "segmentation/mlx_sam3/sam3/convert.py": true,
+        "segmentation/mlx_sam3/sam3/model/box_ops.py": true,
+        "segmentation/mlx_sam3/sam3/model/data_misc.py": true,
+        "segmentation/mlx_sam3/sam3/model/decoder.py": true,
+        "segmentation/mlx_sam3/sam3/model/encoder.py": true,
+        "segmentation/mlx_sam3/sam3/model/geometry_encoders.py": true,
+        "segmentation/mlx_sam3/sam3/model/grid_sample_mlx.py": true,
+        "segmentation/mlx_sam3/sam3/model/maskformer_segmentation.py": true,
+        "segmentation/mlx_sam3/sam3/model/model_misc.py": true,
+        "segmentation/mlx_sam3/sam3/model/necks.py": true,
+        "segmentation/mlx_sam3/sam3/model/position_encoding.py": true,
+        "segmentation/mlx_sam3/sam3/model/roi_align.py": true,
+        "segmentation/mlx_sam3/sam3/model/sam3_image.py": true,
+        "segmentation/mlx_sam3/sam3/model/sam3_image_processor.py": true,
+        "segmentation/mlx_sam3/sam3/model/text_encoder_ve.py": true,
+        "segmentation/mlx_sam3/sam3/model/tokenizer_ve.py": true,
+        "segmentation/mlx_sam3/sam3/model/vitdet.py": true,
+        "segmentation/mlx_sam3/sam3/model/vl_combiner.py": true,
+        "segmentation/mlx_sam3/sam3/model_builder.py": true,
+        "segmentation/mlx_sam3/sam3/utils.py": true,
+        "segmentation/mlx_sam3/sam3/visualization_utils.py": true,
+        "segmentation/mlx_sam3/assets/bpe_simple_vocab_16e6.txt.gz": true,
+        "revision/__init__.py": true,
+        "revision/guard.py": true,
+        "revision/metrics.py": true,
+        "revision/runner.py": true,
+        "revision/sam_worker.py": true
+      },
+      "source_note": "Frozen pipeline/model source must remain exact; later orchestration changes are recorded, not mistaken for the old executed code."
+    },
+    "new": {
+      "manifest_sha256": "751e5e0f1802635e242db37cee6d6e540ceb3ef4e65f79fa851b745537478e53",
+      "protocol": {
+        "holdout_sha256": "121696648105e06a0571da19529e8f6eb03e2d8fb47fe4939a95fc6263e9637a",
+        "objective_sha256": "aa34e52612c2f08601199513df4a5fb84528f9dac1efae6136da9d956a9554ee"
+      },
+      "source_git_commit": "208ece48b5bd7746e2c143a97ba1f427336ff515",
+      "source_root": "revision_work/fixed_source",
+      "model_checkpoint_sha256": "0ad4c3f42ecf706c4cda63cf58d621699491ed65012b3999284ea370984f7173",
+      "input_sha256_verified": "2fbb019d7c6438f696339f1d5715a0c0d5b157fc603b54021e3f3153aef4680f",
+      "reference_sha256_verified": "24380bb9533881236c39584c1cd61ded990bdaba174579466267ac75b5c9b035",
+      "current_source_hash_checks": {
+        "revision_work/fixed_source/config.py": true,
+        "revision_work/fixed_source/main.py": true,
+        "revision_work/fixed_source/classification/baseline.py": true,
+        "revision_work/fixed_source/classification/fuse.py": true,
+        "revision_work/fixed_source/segmentation/segment_sam3.py": true,
+        "revision_work/fixed_source/evaluation/evaluate.py": true,
+        "revision_work/fixed_source/reprojection/map_back.py": true,
+        "revision_work/fixed_source/projection/grid.py": true,
+        "revision_work/fixed_source/projection/ortho.py": true,
+        "revision_work/fixed_source/projection/features.py": true,
+        "revision_work/fixed_source/projection/ground.py": true,
+        "segmentation/mlx_sam3/sam3/__init__.py": true,
+        "segmentation/mlx_sam3/sam3/convert.py": true,
+        "segmentation/mlx_sam3/sam3/model/box_ops.py": true,
+        "segmentation/mlx_sam3/sam3/model/data_misc.py": true,
+        "segmentation/mlx_sam3/sam3/model/decoder.py": true,
+        "segmentation/mlx_sam3/sam3/model/encoder.py": true,
+        "segmentation/mlx_sam3/sam3/model/geometry_encoders.py": true,
+        "segmentation/mlx_sam3/sam3/model/grid_sample_mlx.py": true,
+        "segmentation/mlx_sam3/sam3/model/maskformer_segmentation.py": true,
+        "segmentation/mlx_sam3/sam3/model/model_misc.py": true,
+        "segmentation/mlx_sam3/sam3/model/necks.py": true,
+        "segmentation/mlx_sam3/sam3/model/position_encoding.py": true,
+        "segmentation/mlx_sam3/sam3/model/roi_align.py": true,
+        "segmentation/mlx_sam3/sam3/model/sam3_image.py": true,
+        "segmentation/mlx_sam3/sam3/model/sam3_image_processor.py": true,
+        "segmentation/mlx_sam3/sam3/model/text_encoder_ve.py": true,
+        "segmentation/mlx_sam3/sam3/model/tokenizer_ve.py": true,
+        "segmentation/mlx_sam3/sam3/model/vitdet.py": true,
+        "segmentation/mlx_sam3/sam3/model/vl_combiner.py": true,
+        "segmentation/mlx_sam3/sam3/model_builder.py": true,
+        "segmentation/mlx_sam3/sam3/utils.py": true,
+        "segmentation/mlx_sam3/sam3/visualization_utils.py": true,
+        "segmentation/mlx_sam3/assets/bpe_simple_vocab_16e6.txt.gz": true,
+        "revision/__init__.py": true,
+        "revision/guard.py": true,
+        "revision/metrics.py": true,
+        "revision/sam_worker.py": true,
+        "revision/runner.py": true,
+        "revision/components.py": true,
+        "revision/experiments.py": true,
+        "revision/units.py": true
+      },
+      "source_note": "Frozen pipeline/model source must remain exact; later orchestration changes are recorded, not mistaken for the old executed code."
+    }
+  },
+  "derived_arrays": {
+    "derived/dtm.npy": {
+      "same_shape": true,
+      "shape": [
+        300,
+        300
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "float32",
+      "new_dtype": "float32",
+      "max_absolute_finite_difference": 0.0
+    },
+    "derived/hag.npy": {
+      "same_shape": true,
+      "shape": [
+        2505912
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "float32",
+      "new_dtype": "float32",
+      "max_absolute_finite_difference": 0.0
+    },
+    "derived/exg.npy": {
+      "same_shape": true,
+      "shape": [
+        2505912
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "float32",
+      "new_dtype": "float32",
+      "max_absolute_finite_difference": 0.0
+    },
+    "slices/surface_z.npy": {
+      "same_shape": true,
+      "shape": [
+        300,
+        300
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "float32",
+      "new_dtype": "float32",
+      "max_absolute_finite_difference": 0.0
+    },
+    "slices/exg_grid.npy": {
+      "same_shape": true,
+      "shape": [
+        300,
+        300
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "float32",
+      "new_dtype": "float32",
+      "max_absolute_finite_difference": 0.0
+    },
+    "slices/hag_grid.npy": {
+      "same_shape": true,
+      "shape": [
+        300,
+        300
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "float32",
+      "new_dtype": "float32",
+      "max_absolute_finite_difference": 0.0
+    },
+    "slices/void_mask.npy": {
+      "same_shape": true,
+      "shape": [
+        300,
+        300
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "bool",
+      "new_dtype": "bool"
+    }
+  },
+  "raster_images": {
+    "equal_hash_maps": true,
+    "old": {
+      "slices/ortho_rgb.png": "daf701ef93207b34e0518847f5f02c112581ce89306972efcac39896b6c54dfa",
+      "slices/tiles/tile_r0_c0.png": "daf701ef93207b34e0518847f5f02c112581ce89306972efcac39896b6c54dfa"
+    },
+    "new": {
+      "slices/ortho_rgb.png": "daf701ef93207b34e0518847f5f02c112581ce89306972efcac39896b6c54dfa",
+      "slices/tiles/tile_r0_c0.png": "daf701ef93207b34e0518847f5f02c112581ce89306972efcac39896b6c54dfa"
+    }
+  },
+  "pilot_arrays": {
+    "ids": {
+      "same_shape": true,
+      "shape": [
+        158618
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "uint32",
+      "new_dtype": "uint32",
+      "max_absolute_finite_difference": 0.0
+    },
+    "reference": {
+      "same_shape": true,
+      "shape": [
+        158618
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "uint8",
+      "new_dtype": "uint8",
+      "max_absolute_finite_difference": 0.0
+    },
+    "prediction": {
+      "same_shape": true,
+      "shape": [
+        158618
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "uint8",
+      "new_dtype": "uint8",
+      "max_absolute_finite_difference": 0.0
+    },
+    "baseline": {
+      "same_shape": true,
+      "shape": [
+        158618
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "uint8",
+      "new_dtype": "uint8",
+      "max_absolute_finite_difference": 0.0
+    },
+    "x": {
+      "same_shape": true,
+      "shape": [
+        158618
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "float64",
+      "new_dtype": "float64",
+      "max_absolute_finite_difference": 0.0
+    },
+    "y": {
+      "same_shape": true,
+      "shape": [
+        158618
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "float64",
+      "new_dtype": "float64",
+      "max_absolute_finite_difference": 0.0
+    },
+    "z": {
+      "same_shape": true,
+      "shape": [
+        158618
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "float64",
+      "new_dtype": "float64",
+      "max_absolute_finite_difference": 0.0
+    },
+    "hag": {
+      "same_shape": true,
+      "shape": [
+        158618
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "float32",
+      "new_dtype": "float32",
+      "max_absolute_finite_difference": 0.0
+    },
+    "exg": {
+      "same_shape": true,
+      "shape": [
+        158618
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "float32",
+      "new_dtype": "float32",
+      "max_absolute_finite_difference": 0.0
+    },
+    "r": {
+      "same_shape": true,
+      "shape": [
+        158618
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "int64",
+      "new_dtype": "int64",
+      "max_absolute_finite_difference": 0.0
+    },
+    "c": {
+      "same_shape": true,
+      "shape": [
+        158618
+      ],
+      "equal": true,
+      "changed_values": 0,
+      "old_dtype": "int64",
+      "new_dtype": "int64",
+      "max_absolute_finite_difference": 0.0
+    }
+  },
+  "independent_metric_checks": {
+    "before": {
+      "scored_points": true,
+      "correct_points": true,
+      "error_points": true,
+      "unlabelled_points": true,
+      "overall_accuracy": true,
+      "primary_loss": true,
+      "macro_iou": true,
+      "confusion_matrix": true
+    },
+    "after": {
+      "scored_points": true,
+      "correct_points": true,
+      "error_points": true,
+      "unlabelled_points": true,
+      "overall_accuracy": true,
+      "primary_loss": true,
+      "macro_iou": true,
+      "confusion_matrix": true
+    }
+  },
+  "before_after": {
+    "before": {
+      "scored_points": 158618,
+      "correct_points": 153403,
+      "error_points": 5215,
+      "unlabelled_points": 2611,
+      "overall_accuracy": 0.9671222685949892,
+      "primary_loss": 0.034327844917785524,
+      "macro_iou": 0.9636349427371954,
+      "confusion_matrix": [
+        [
+          69644,
+          299,
+          0,
+          2257,
+          0,
+          1478,
+          0
+        ],
+        [
+          48,
+          83759,
+          0,
+          0,
+          0,
+          1133,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "per_class": {
+        "3": {
+          "support": 73678,
+          "error_points": 4034,
+          "iou": 0.9446328296666033
+        },
+        "5": {
+          "support": 84940,
+          "error_points": 1181,
+          "iou": 0.9826370558077875
+        }
+      }
+    },
+    "after": {
+      "scored_points": 158618,
+      "correct_points": 153403,
+      "error_points": 5215,
+      "unlabelled_points": 2611,
+      "overall_accuracy": 0.9671222685949892,
+      "primary_loss": 0.034327844917785524,
+      "macro_iou": 0.9636349427371954,
+      "confusion_matrix": [
+        [
+          69644,
+          299,
+          0,
+          2257,
+          0,
+          1478,
+          0
+        ],
+        [
+          48,
+          83759,
+          0,
+          0,
+          0,
+          1133,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "per_class": {
+        "3": {
+          "support": 73678,
+          "error_points": 4034,
+          "iou": 0.9446328296666033
+        },
+        "5": {
+          "support": 84940,
+          "error_points": 1181,
+          "iou": 0.9826370558077875
+        }
+      }
+    },
+    "net_error_change": 0,
+    "primary_loss_change": 0.0
+  },
+  "pixel_labels": {
+    "same_shape": true,
+    "shape": [
+      300,
+      300
+    ],
+    "equal": true,
+    "changed_values": 0,
+    "old_dtype": "int32",
+    "new_dtype": "int32",
+    "max_absolute_finite_difference": 0.0
+  },
+  "pixel_scores": {
+    "same_shape": true,
+    "shape": [
+      300,
+      300
+    ],
+    "equal": true,
+    "changed_values": 0,
+    "old_dtype": "float32",
+    "new_dtype": "float32",
+    "max_absolute_finite_difference": 0.0
+  },
+  "export": {
+    "points": 158618,
+    "source_field_checks": {
+      "X": {
+        "same_shape": true,
+        "shape": [
+          158618
+        ],
+        "equal": true,
+        "changed_values": 0,
+        "old_dtype": "int32",
+        "new_dtype": "int32",
+        "max_absolute_finite_difference": 0.0
+      },
+      "Y": {
+        "same_shape": true,
+        "shape": [
+          158618
+        ],
+        "equal": true,
+        "changed_values": 0,
+        "old_dtype": "int32",
+        "new_dtype": "int32",
+        "max_absolute_finite_difference": 0.0
+      },
+      "Z": {
+        "same_shape": true,
+        "shape": [
+          158618
+        ],
+        "equal": true,
+        "changed_values": 0,
+        "old_dtype": "int32",
+        "new_dtype": "int32",
+        "max_absolute_finite_difference": 0.0
+      },
+      "intensity": {
+        "same_shape": true,
+        "shape": [
+          158618
+        ],
+        "equal": true,
+        "changed_values": 0,
+        "old_dtype": "uint16",
+        "new_dtype": "uint16",
+        "max_absolute_finite_difference": 0.0
+      },
+      "bit_fields": {
+        "same_shape": true,
+        "shape": [
+          158618
+        ],
+        "equal": true,
+        "changed_values": 0,
+        "old_dtype": "uint8",
+        "new_dtype": "uint8",
+        "max_absolute_finite_difference": 0.0
+      },
+      "classification_flags": {
+        "same_shape": true,
+        "shape": [
+          158618
+        ],
+        "equal": true,
+        "changed_values": 0,
+        "old_dtype": "uint8",
+        "new_dtype": "uint8",
+        "max_absolute_finite_difference": 0.0
+      },
+      "user_data": {
+        "same_shape": true,
+        "shape": [
+          158618
+        ],
+        "equal": true,
+        "changed_values": 0,
+        "old_dtype": "uint8",
+        "new_dtype": "uint8",
+        "max_absolute_finite_difference": 0.0
+      },
+      "scan_angle": {
+        "same_shape": true,
+        "shape": [
+          158618
+        ],
+        "equal": true,
+        "changed_values": 0,
+        "old_dtype": "int16",
+        "new_dtype": "int16",
+        "max_absolute_finite_difference": 0.0
+      },
+      "point_source_id": {
+        "same_shape": true,
+        "shape": [
+          158618
+        ],
+        "equal": true,
+        "changed_values": 0,
+        "old_dtype": "uint16",
+        "new_dtype": "uint16",
+        "max_absolute_finite_difference": 0.0
+      },
+      "gps_time": {
+        "same_shape": true,
+        "shape": [
+          158618
+        ],
+        "equal": true,
+        "changed_values": 0,
+        "old_dtype": "float64",
+        "new_dtype": "float64",
+        "max_absolute_finite_difference": 0.0
+      },
+      "red": {
+        "same_shape": true,
+        "shape": [
+          158618
+        ],
+        "equal": true,
+        "changed_values": 0,
+        "old_dtype": "uint16",
+        "new_dtype": "uint16",
+        "max_absolute_finite_difference": 0.0
+      },
+      "green": {
+        "same_shape": true,
+        "shape": [
+          158618
+        ],
+        "equal": true,
+        "changed_values": 0,
+        "old_dtype": "uint16",
+        "new_dtype": "uint16",
+        "max_absolute_finite_difference": 0.0
+      },
+      "blue": {
+        "same_shape": true,
+        "shape": [
+          158618
+        ],
+        "equal": true,
+        "changed_values": 0,
+        "old_dtype": "uint16",
+        "new_dtype": "uint16",
+        "max_absolute_finite_difference": 0.0
+      },
+      "nir": {
+        "same_shape": true,
+        "shape": [
+          158618
+        ],
+        "equal": true,
+        "changed_values": 0,
+        "old_dtype": "uint16",
+        "new_dtype": "uint16",
+        "max_absolute_finite_difference": 0.0
+      },
+      "orig_index": {
+        "same_shape": true,
+        "shape": [
+          158618
+        ],
+        "equal": true,
+        "changed_values": 0,
+        "old_dtype": "uint32",
+        "new_dtype": "uint32",
+        "max_absolute_finite_difference": 0.0
+      }
+    },
+    "source_record_bytes": 42,
+    "new_record_bytes": 49,
+    "added_bytes_per_point": 7,
+    "source_user_data_overwritten_before": 155485,
+    "source_user_data_overwritten_after": 0,
+    "header_scales_preserved": true,
+    "header_offsets_preserved": true,
+    "vlr_checks": [],
+    "semantic_anomalies": {
+      "route_mismatch_points": 0,
+      "non_transfer_with_non_nan_score": 0,
+      "transfer_nonfinite_score": 0,
+      "transfer_score_grid_mismatch": 0,
+      "internal_class_mapping_mismatch": 0,
+      "npz_vs_las_prediction_mismatch": 0
+    },
+    "source_counts": {
+      "0": 2611,
+      "1": 89787,
+      "2": 66220,
+      "3": 0,
+      "4": 0
+    },
+    "zero_score_surface_transfers": 522,
+    "interpretation": "Surface transfer includes labels propagated by smoothing. Model scores are not calibrated confidence. Source user_data is preserved independently."
+  },
+  "units": {
+    "schema_version": 1,
+    "configured_coordinate_units": "US survey foot",
+    "configured_unit_to_metre": 0.3048006096012192,
+    "configured_unit_to_metre_exact": "1200/3937",
+    "input_assumption": "US survey foot",
+    "metadata_source": "LAS header has no declared CRS",
+    "coordinates_rescaled": false,
+    "crs": "UNKNOWN - needs provider/PI",
+    "crs_wkt": null,
+    "axes": [],
+    "horizontal_units_status": "assumed; CRS absent",
+    "vertical_units_status": "assumed; CRS absent",
+    "vertical_datum": "UNKNOWN - needs provider/PI",
+    "vertical_datum_basis": "No CRS supplied or declared",
+    "provider_confirmation_required": true
+  },
+  "raw_inference": {
+    "old": {
+      "tile_r0_c0.json": {
+        "sha256": "3e38dc207f2ea6c22bf7cf4708497806a8d470b5949cbffe6ea91ce108dc345c",
+        "checks": {
+          "parent_manifest": true,
+          "image_hash": true,
+          "image_path": true,
+          "checkpoint_hash": true,
+          "raw_score_floor": true,
+          "source_hashes": true
+        },
+        "prompt_counts": {
+          "road": 8,
+          "sidewalk": 18,
+          "parking lot": 8,
+          "grass": 24,
+          "tree": 5,
+          "building": 0,
+          "car": 0
+        }
+      }
+    },
+    "new": {
+      "tile_r0_c0.json": {
+        "sha256": "f64ae242318a6b1c6ad9fbaa979ab8b141f988ad532cd73e6c2db4d71b02a87e",
+        "checks": {
+          "parent_manifest": true,
+          "image_hash": true,
+          "image_path": true,
+          "checkpoint_hash": true,
+          "raw_score_floor": true,
+          "source_hashes": true
+        },
+        "prompt_counts": {
+          "road": 8,
+          "sidewalk": 18,
+          "parking lot": 8,
+          "grass": 24,
+          "tree": 5,
+          "building": 0,
+          "car": 0
+        }
+      }
+    },
+    "before_after_detection_comparison": {
+      "tile_r0_c0.json": {
+        "road": {
+          "old_count": 8,
+          "new_count": 8,
+          "comparison": "same returned order; no assumed instance correspondence if counts/order differ",
+          "exactly_equal": true,
+          "mask_pairs_different": 0,
+          "max_absolute_score_difference": 0.0,
+          "max_absolute_bbox_difference": 0.0
+        },
+        "sidewalk": {
+          "old_count": 18,
+          "new_count": 18,
+          "comparison": "same returned order; no assumed instance correspondence if counts/order differ",
+          "exactly_equal": true,
+          "mask_pairs_different": 0,
+          "max_absolute_score_difference": 0.0,
+          "max_absolute_bbox_difference": 0.0
+        },
+        "parking lot": {
+          "old_count": 8,
+          "new_count": 8,
+          "comparison": "same returned order; no assumed instance correspondence if counts/order differ",
+          "exactly_equal": true,
+          "mask_pairs_different": 0,
+          "max_absolute_score_difference": 0.0,
+          "max_absolute_bbox_difference": 0.0
+        },
+        "grass": {
+          "old_count": 24,
+          "new_count": 24,
+          "comparison": "same returned order; no assumed instance correspondence if counts/order differ",
+          "exactly_equal": true,
+          "mask_pairs_different": 0,
+          "max_absolute_score_difference": 0.0,
+          "max_absolute_bbox_difference": 0.0
+        },
+        "tree": {
+          "old_count": 5,
+          "new_count": 5,
+          "comparison": "same returned order; no assumed instance correspondence if counts/order differ",
+          "exactly_equal": true,
+          "mask_pairs_different": 0,
+          "max_absolute_score_difference": 0.0,
+          "max_absolute_bbox_difference": 0.0
+        },
+        "building": {
+          "old_count": 0,
+          "new_count": 0,
+          "comparison": "same returned order; no assumed instance correspondence if counts/order differ",
+          "exactly_equal": true,
+          "mask_pairs_different": 0,
+          "max_absolute_score_difference": 0.0,
+          "max_absolute_bbox_difference": 0.0
+        },
+        "car": {
+          "old_count": 0,
+          "new_count": 0,
+          "comparison": "same returned order; no assumed instance correspondence if counts/order differ",
+          "exactly_equal": true,
+          "mask_pairs_different": 0,
+          "max_absolute_score_difference": 0.0,
+          "max_absolute_bbox_difference": 0.0
+        }
+      }
+    }
+  },
+  "fix_assessments": {
+    "M1_ground_minimum": {
+      "before_metrics": "before_after.before",
+      "after_metrics": "before_after.after",
+      "observed_dtm_and_hag_identical": true,
+      "explanation": "The pipeline decimates to one candidate per coarse cell before CSF. fmin corrects the duplicate-cell contract; equal DTM/HAG demonstrates whether this particular pilot was affected. This audit does not invent an accuracy gain from a dormant collision bug.",
+      "isolation": "Same input, preprocessing parameters, and model; directly compare DTM/HAG. Fresh model outputs are separately compared for numerical differences."
+    },
+    "M_minor_export_provenance": {
+      "before_metrics": "before_after.before",
+      "after_metrics": "before_after.after",
+      "classification_changed_by_export": 0,
+      "source_user_data_overwritten_before": 155485,
+      "source_user_data_overwritten_after": 0,
+      "extra_bytes_per_point": 7,
+      "interpretation": "Metadata repair; evaluate accuracy on classification only. No reference labels changed."
+    },
+    "M1_cache_identity": {
+      "before_metrics": "before_after.before",
+      "after_metrics": "before_after.after",
+      "classification_operation": "none; validates matching response/image/model/code provenance before consumption",
+      "checks": "raw_inference.old and raw_inference.new",
+      "limitation": "This verifies the new revision path. Legacy filename-only HTTP cache remains unsafe and was not used or opened."
+    },
+    "M5_unit_CRS_guard": {
+      "before_metrics": "before_after.before",
+      "after_metrics": "before_after.after",
+      "classification_operation": "none; explicit metadata validation, no coordinate or threshold conversion",
+      "metadata": "units",
+      "limitation": "Absent provenance remains UNKNOWN - needs provider/PI; assuming survey-foot units is not verifying source metadata."
+    }
+  },
+  "limitations": [
+    "Existing reference labels were read only; no independent semantic audit is implied.",
+    "Before/after accuracy is one development patch, not an independent test.",
+    "Cache and unit guards are metadata validation changes, not standalone alternative classifiers; their metric references show unchanged scoring inputs, not a causal performance effect."
+  ]
+}

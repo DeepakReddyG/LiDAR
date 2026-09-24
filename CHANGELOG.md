@@ -1,0 +1,12 @@
+# Revision evidence changelog — September 23, 2026
+
+Historical outputs are preserved. All metrics below concern the preregistered tile-C development pilot (158,618 reviewed points), never independent validation. Evidence: `revision_work/evidence/fix_audit.json` and the corresponding run manifests.
+
+| Review item / correction | Before → after on fresh pilot | Verification |
+|---|---|---|
+| M1/M7: terrain aggregation now uses the documented minimum, not maximum, when ground points collide in a raster cell | 5,215 → 5,215 errors; balanced loss 3.4327844918% → 3.4327844918%; 0 changed predictions | Synthetic collisions exposed and fixed the defect. Actual pilot DTM/HAG/ExG and images are byte-identical, consistent with decimation supplying one candidate per cell. No accuracy improvement claimed. |
+| M1/M6/minor: split mixed confidence/fallback field into model_score, prediction_source and internal_class_id; preserve source user_data | 5,215 → 5,215 errors; same loss; 0 changed predictions | 155,485 source user_data values overwritten by prior export → 0. All other source fields/XYZ/scales/offsets/VLRs preserved. Scores are NaN for fallback/unlabelled; 522 smoothed transferred labels legitimately have zero model score. Export adds 7 bytes/point. |
+| M1: hashed fresh inference and strict response identity replace unverified cache reuse in the revision execution path | Same fresh predictions before/after terrain/export fixes; 5,215 errors. Cache validation changes acceptance of evidence, not classification | Image/checkpoint/source/tokenizer/preprocessing/prompt hashes and complete jobs verified; synthetic altered/missing responses rejected. The historical HTTP filename cache remains unsafe and is not used or represented as repaired. |
+| M5: explicit coordinate-unit contract and rejection of known incompatible CRS units | Same pilot labels and metrics; no coordinate conversion | US survey feet remain an explicit project assumption because source CRS is absent. Metres/international feet/angular units fail synthetic tests. Unknown acquisition and datum facts are not filled in. |
+
+The Phase 1 integration failures (checkpoint symlink lost extension; sliced LAS lost scale-aware access) occurred before a scored result. Regression tests were added, attempts archived, manifests recommitted, and the complete route rerun without changing experimental settings. Historical July scores differ from fresh bounded runs; historical configuration and full-survey context were not reconstructed.
