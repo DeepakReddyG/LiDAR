@@ -1,0 +1,15 @@
+{
+  "completion_record": "phase5_gate.json.completion.json",
+  "created_utc": "2026-09-24T00:16:19.079143+00:00",
+  "event_id": "23e55639-44f7-466e-9f1a-d66ec6c095c5",
+  "final_commit": "d48d085ec9dd1cfd5a55671c2871f0a02b5b3567",
+  "holdout_sha256": "121696648105e06a0571da19529e8f6eb03e2d8fb47fe4939a95fc6263e9637a",
+  "irreversible": true,
+  "manifest_path": "revision_work/manifests/final_manifest.json",
+  "manifest_sha256": "013abbe0d8a02dea20a997eebcfb20983db6043ae6e181da1a9b00c65a3cd6b2",
+  "mode": "annotation_only",
+  "objective_sha256": "aa34e52612c2f08601199513df4a5fb84528f9dac1efae6136da9d956a9554ee",
+  "recovery_rule": "Failure or missing reference labels still consumes this event; no retry under this protocol.",
+  "schema_version": 1,
+  "status": "started"
+}

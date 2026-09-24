@@ -1,0 +1,10 @@
+{
+  "event_id": "23e55639-44f7-466e-9f1a-d66ec6c095c5",
+  "status": "blocked_no_reference",
+  "gate_path": "/Users/deepakreddygathpa/WorkSpace/discover/LiDAR/revision_work/phase5_gate.json",
+  "annotation_output": "/Users/deepakreddygathpa/WorkSpace/discover/LiDAR/research_paper_documents_and_drafts/supporting/revision_experiments_2026-09-23/holdout_annotation",
+  "reference_inventory": "/Users/deepakreddygathpa/WorkSpace/discover/LiDAR/revision_work/phase5_gate.json.reference_inventory.json",
+  "heldout_accuracy": null,
+  "model_inference_run": false,
+  "required_human_action": "Provide independent prediction-blind human reference annotations for the preregistered held-out rectangles, with immutable point-ID mapping, source hash, taxonomy, coverage/uncertainty rules, annotator identities, dates, adjudication history and explicit PI/researcher approval. Existing nonzero LAS classes alone are insufficient. A later evaluation requires a new explicitly approved protocol; this consumed Phase 5 gate cannot be rerun."
+}

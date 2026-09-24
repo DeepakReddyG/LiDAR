@@ -1,0 +1,40 @@
+{
+  "event_id": "23e55639-44f7-466e-9f1a-d66ec6c095c5",
+  "heldout_accuracy": null,
+  "independent_reference_status": "NOT ESTABLISHED",
+  "model_inference_run": false,
+  "records": [
+    {
+      "annotation_provenance": "UNKNOWN - needs provider/PI",
+      "candidate": "data/eval/tile_a_gt.las",
+      "eligible_for_scoring": false,
+      "exists": false,
+      "independent_human_approval": "NOT PROVIDED in committed final manifest",
+      "region_id": "holdout_a",
+      "scoring_bounds": [
+        1391009.38,
+        447870.05,
+        1391049.38,
+        447900.05
+      ],
+      "status": "candidate file absent"
+    },
+    {
+      "annotation_provenance": "UNKNOWN - needs provider/PI",
+      "candidate": "data/eval/tile_b_gt.las",
+      "eligible_for_scoring": false,
+      "exists": false,
+      "independent_human_approval": "NOT PROVIDED in committed final manifest",
+      "region_id": "holdout_b",
+      "scoring_bounds": [
+        1391224.38,
+        447845.05,
+        1391264.38,
+        447875.05
+      ],
+      "status": "candidate file absent"
+    }
+  ],
+  "required_human_action": "Provide independent prediction-blind human reference annotations for the preregistered held-out rectangles, with immutable point-ID mapping, source hash, taxonomy, coverage/uncertainty rules, annotator identities, dates, adjudication history and explicit PI/researcher approval. Existing nonzero LAS classes alone are insufficient. A later evaluation requires a new explicitly approved protocol; this consumed Phase 5 gate cannot be rerun.",
+  "schema_version": 1
+}
