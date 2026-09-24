@@ -564,6 +564,16 @@ def load_raw_conf(m, out, c):
     return conf
 
 
+def subset_las(raw, selection):
+    """Keep coordinate scaling when laspy slicing returns a packed record."""
+    header = raw.header.copy()
+    records = laspy.ScaleAwarePointRecord(
+        raw.points[selection].array.copy(), header.point_format,
+        header.scales, header.offsets,
+    )
+    return laspy.LasData(header, records)
+
+
 def score(m, out):
     # Reserve scoring once before imports or writes. Even a failed attempt is
     # preserved; rerun in a new run directory instead of overwriting evidence.
@@ -580,8 +590,7 @@ def score(m, out):
     raw = laspy.read(out / "input.las")
     sel = inside(raw, m["dataset"]["score_bounds"])
     idx = np.flatnonzero(sel)
-    pilot = laspy.LasData(raw.header.copy())
-    pilot.points = raw.points[sel].copy()
+    pilot = subset_las(raw, sel)
     meta = np.load(out / "slices/grid_meta.npz")
     x, y, z = map(np.asarray, [pilot.x, pilot.y, pilot.z])
     res = float(meta["resolution"])

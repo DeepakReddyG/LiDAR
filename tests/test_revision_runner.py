@@ -290,3 +290,17 @@ def test_csf_manifest_contains_actual_runtime_parameters_without_filtering():
         "time_step",
     }
     json.dumps(parameters, allow_nan=False)
+
+
+def test_subset_preserves_scale_aware_coordinates():
+    from revision.runner import subset_las
+    import laspy
+    header = laspy.LasHeader(point_format=7, version="1.4")
+    header.scales = np.array([.01,.02,.03])
+    header.offsets = np.array([1e6,2e6,0.])
+    raw = laspy.LasData(header)
+    raw.x = np.array([1000001.,1000002.]); raw.y = np.array([2000001.,2000002.]); raw.z = np.array([3.,6.])
+    subset = subset_las(raw, np.array([True,False]))
+    assert np.array_equal(subset.X, raw.X[:1])
+    assert np.array_equal(np.asarray(subset.x), np.asarray(raw.x)[:1])
+    assert np.array_equal(subset.header.scales, header.scales)
