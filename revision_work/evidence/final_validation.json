@@ -1,0 +1,26 @@
+{
+  "date": "2026-09-23",
+  "checks": {
+    "pilot_reference_unchanged": true,
+    "pilot_input_unchanged": true,
+    "manuscript_pdf_unchanged": true,
+    "manuscript_md_unchanged": true,
+    "holdout_lock_unchanged": true,
+    "objective_lock_unchanged": true,
+    "all_executed_and_final_source_hashes_unchanged": true,
+    "summary_and_replacement_local_links_resolve": true
+  },
+  "source_hash_checks": {
+    "phase1_fresh_v3": true,
+    "fixed_anchor": true,
+    "grid_025": true,
+    "grid_1": true,
+    "rgb_band_075": true,
+    "rgb_band_3": true,
+    "final_manifest": true
+  },
+  "broken_links": [],
+  "tests": "177 passed in 2.31s; tests/test_revision_*.py",
+  "holdout_status": "blocked_no_reference; no inference/scoring",
+  "paper_unchanged": true
+}

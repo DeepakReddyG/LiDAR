@@ -1,0 +1,34 @@
+Grid 600 × 600 at 0.25 ft/px → /Users/deepakreddygathpa/WorkSpace/discover/LiDAR/revision_work/runs/grid_025/slices/grid_meta.npz
+2,505,912 points → /Users/deepakreddygathpa/WorkSpace/discover/LiDAR/revision_work/runs/grid_025/derived
+  chunk 1: 2,505,912/2,505,912
+[0] Configuring terrain...
+[0]  - bbMin: 1.39119e+06 -897.929 448036
+[0]  - bbMax: 1.39133e+06 -866.68 448184
+[0] Configuring cloth...
+[0]  - width: 78 height: 78
+[0] Rasterizing...
+[0] Simulating...
+Saved /Users/deepakreddygathpa/WorkSpace/discover/LiDAR/revision_work/runs/grid_025/derived/exg_hist.png
+INSPECT IT: veg bump present = ExG usable; flat = calibrate vetoes on eval tiles.
+1/4 decimating (min-Z per cell) …
+  dropped 40 low-outlier cells
+  decimated to 5,585 candidate points (75×75 cells)
+2/4 CSF ground filtering …
+  CSF: 3,317 ground / 5,585 candidates
+3/4 building DTM …
+Saved /Users/deepakreddygathpa/WorkSpace/discover/LiDAR/revision_work/runs/grid_025/derived/dtm_preview.png
+INSPECT IT: embossed structures ⇒ adjust CLOTH_RESOLUTION.
+4/4 per-point HAG …
+  hag chunk 1: 2,505,912/2,505,912
+Saved hag.npy for 2,505,912 points
+pass 1/2 — max-Z per cell …
+  pass1 chunk 1
+  0.3% void cells
+pass 2/2 — near-surface means …
+  pass2 chunk 1
+Saved ortho_rgb.png + 5 grids + 1 tiles → /Users/deepakreddygathpa/WorkSpace/discover/LiDAR/revision_work/runs/grid_025/slices
+INSPECT ortho_rgb.png: must look like an aerial photo (human gate).
+Prepared 1 inference images
+Backbone pass took 1.26 Seconds
+{"output": "/Users/deepakreddygathpa/WorkSpace/discover/LiDAR/revision_work/runs/grid_025/masks/raw/tile_r0_c0.json", "detections": {"road": 8, "sidewalk": 18, "parking lot": 10, "grass": 25, "tree": 7, "building": 0, "car": 0}, "seconds": 3.170611583002028, "peak_memory_bytes": 8555412779}
+sam3_c1_s1_height_aware 7564 4.971277
