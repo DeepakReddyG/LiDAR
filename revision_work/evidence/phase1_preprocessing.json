@@ -1,0 +1,11 @@
+{
+  "seconds": {
+    "grid": 0.0027909278869628906,
+    "features": 0.377216100692749,
+    "ground": 0.18615198135375977,
+    "ortho": 0.3470931053161621
+  },
+  "input_crop_sha256": "4052f08a0785b61e28db98e5ce2b2614729047efe9d35d705bf5a0394edc97dc",
+  "context": "bounded tile C only; no historical survey features",
+  "units": "US survey feet - explicit project configuration; source header CRS absent"
+}

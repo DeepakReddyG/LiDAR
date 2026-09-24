@@ -1,0 +1,1211 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-24T00:02:43.941084+00:00",
+  "purpose": "Exact retrospective extraction for comparisons against manuscript Tables 5-7; not a new data evaluation.",
+  "data_access": "Read only canonical document-folder Markdown and JSON evidence. No raw point files, held-out region files, survey caches or model output arrays opened.",
+  "scientific_evidence_date": "2026-09-14",
+  "units": "Metric fractions in [0,1]; printed_table_values are two-decimal percentages.",
+  "sources": {
+    "evaluation": {
+      "path": "research_paper_documents_and_drafts/annotation_pilot/evaluation/results.json",
+      "sha256": "85b318da78885e50fa211f56160255497b83f06a859bec91a338ae043be496ee"
+    },
+    "height_check": {
+      "path": "research_paper_documents_and_drafts/annotation_pilot/tree_height_experiment/results.json",
+      "sha256": "0232a1ffb34c53d83fa11857fd5acec360027b55765d0bb421a5f7d61b58b636"
+    },
+    "smoothing_checks": {
+      "path": "research_paper_documents_and_drafts/annotation_pilot/physical_smoothing_only/results.json",
+      "sha256": "d47c1b6775b0ec7c905c1bda37e85cccf07bb746d1041350ad29d7116c8a4be1"
+    },
+    "both_combined": {
+      "path": "research_paper_documents_and_drafts/annotation_pilot/physical_smoothing_height/results.json",
+      "sha256": "3827d903cd39b45ee60c90c307c437319df8063b3584907d995d40024d94c8cb"
+    },
+    "manuscript": {
+      "path": "research_paper_documents_and_drafts/research_paper_revision_2026-09-23.md",
+      "sha256": "bbd1d215cc5583802aac9e6ad56d8adbf84094ecf8ef5d81668ee36ef20f1aca"
+    },
+    "review": {
+      "path": "research_paper_documents_and_drafts/12_anonymous_reviewer_report_2026-09-23.md",
+      "sha256": "f9631366d4db23a76a5b5aab52338f73dec7594e280a30f774b9b9faa417c58d"
+    }
+  },
+  "scope": {
+    "development_only": true,
+    "scored_points": 158618,
+    "reference_support": {
+      "3": 73678,
+      "5": 84940
+    },
+    "matched_tile_points_as_recorded": 2505937,
+    "unreviewed_tile_points_as_recorded": 2347319,
+    "confusion_normalization": "Rectangular 5x7 view is a lossless reorder of saved confusion counts; absent reference rows and invalid predictions are zero. Precision/IoU are conditional on the available reviewed classes."
+  },
+  "methods": {
+    "baseline": {
+      "label": "Saved rule baseline",
+      "source": {
+        "path": "research_paper_documents_and_drafts/annotation_pilot/evaluation/results.json",
+        "sha256": "85b318da78885e50fa211f56160255497b83f06a859bec91a338ae043be496ee"
+      },
+      "artifact_json_pointer": "/results/Saved rule baseline",
+      "manuscript_locations": [
+        "Table 5 p. 11",
+        "Table 6 p. 12",
+        "Figure 8 p. 13"
+      ],
+      "historical_date": "2026-09-14T13:47:12.815898-04:00",
+      "scored_points": 158618,
+      "correct_points": 154054,
+      "error_points": 4564,
+      "unlabelled_points": 0,
+      "invalid_points": 0,
+      "overall_accuracy": 0.9712264686227288,
+      "macro_iou": 0.9705003262818317,
+      "reference_codes": [
+        3,
+        5,
+        6,
+        11,
+        64
+      ],
+      "prediction_outcomes": [
+        3,
+        5,
+        6,
+        11,
+        64,
+        "unlabelled",
+        "invalid"
+      ],
+      "confusion_matrix": [
+        [
+          70751,
+          0,
+          0,
+          2927,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          83303,
+          1637,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "per_class": {
+        "3": {
+          "support": 73678,
+          "true_positive": 70751,
+          "false_positive": 0,
+          "false_negative": 2927,
+          "precision": 1.0,
+          "recall": 0.9602730801596134,
+          "f1": 0.9797339869416807,
+          "iou": 0.9602730801596134,
+          "error_loss": 0.039726919840386545
+        },
+        "5": {
+          "support": 84940,
+          "true_positive": 83303,
+          "false_positive": 0,
+          "false_negative": 1637,
+          "precision": 1.0,
+          "recall": 0.98072757240405,
+          "f1": 0.9902700260932105,
+          "iou": 0.98072757240405,
+          "error_loss": 0.019272427595950083
+        },
+        "6": {
+          "support": 0,
+          "true_positive": 0,
+          "false_positive": 1637,
+          "false_negative": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "iou": null,
+          "error_loss": null
+        },
+        "11": {
+          "support": 0,
+          "true_positive": 0,
+          "false_positive": 2927,
+          "false_negative": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "iou": null,
+          "error_loss": null
+        },
+        "64": {
+          "support": 0,
+          "true_positive": 0,
+          "false_positive": 0,
+          "false_negative": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "iou": null,
+          "error_loss": null
+        }
+      },
+      "derived_for_comparison": {
+        "primary_loss": 0.029499673718168314,
+        "balanced_accuracy": 0.9705003262818317,
+        "status": "Retrospective arithmetic from saved confusion counts under the newly preregistered objective; not a fresh prediction or an originally reported primary metric."
+      },
+      "printed_table_values": {
+        "accuracy_percent": "97.12",
+        "macro_iou_percent": "97.05",
+        "tree_iou_percent": "98.07",
+        "grass_iou_percent": "96.03"
+      },
+      "source_stored_confusion": {
+        "labels": [
+          "unlabelled",
+          "grass",
+          "tree",
+          "building",
+          "pavement/sidewalk/parking",
+          "vehicle"
+        ],
+        "confusion_matrix": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            70751,
+            0,
+            0,
+            2927,
+            0
+          ],
+          [
+            0,
+            0,
+            83303,
+            1637,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ]
+      }
+    },
+    "pipeline": {
+      "label": "Saved SAM3 pipeline",
+      "source": {
+        "path": "research_paper_documents_and_drafts/annotation_pilot/evaluation/results.json",
+        "sha256": "85b318da78885e50fa211f56160255497b83f06a859bec91a338ae043be496ee"
+      },
+      "artifact_json_pointer": "/results/Saved SAM3 pipeline",
+      "manuscript_locations": [
+        "Table 5 p. 11",
+        "Table 6 p. 12",
+        "Figure 8 p. 13"
+      ],
+      "historical_date": "2026-09-14T13:47:12.815898-04:00",
+      "scored_points": 158618,
+      "correct_points": 154425,
+      "error_points": 4193,
+      "unlabelled_points": 854,
+      "invalid_points": 0,
+      "overall_accuracy": 0.9735654213267094,
+      "macro_iou": 0.9658353162954076,
+      "reference_codes": [
+        3,
+        5,
+        6,
+        11,
+        64
+      ],
+      "prediction_outcomes": [
+        3,
+        5,
+        6,
+        11,
+        64,
+        "unlabelled",
+        "invalid"
+      ],
+      "confusion_matrix": [
+        [
+          70262,
+          845,
+          0,
+          2257,
+          0,
+          314,
+          0
+        ],
+        [
+          237,
+          84163,
+          0,
+          0,
+          0,
+          540,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "per_class": {
+        "3": {
+          "support": 73678,
+          "true_positive": 70262,
+          "false_positive": 237,
+          "false_negative": 3416,
+          "precision": 0.9966382501879459,
+          "recall": 0.9536360921849127,
+          "f1": 0.97466308773244,
+          "iou": 0.9505783670432253,
+          "error_loss": 0.04636390781508727
+        },
+        "5": {
+          "support": 84940,
+          "true_positive": 84163,
+          "false_positive": 845,
+          "false_negative": 777,
+          "precision": 0.9900597590814982,
+          "recall": 0.9908523663762656,
+          "f1": 0.9904559041589192,
+          "iou": 0.9810922655475899,
+          "error_loss": 0.009147633623734401
+        },
+        "6": {
+          "support": 0,
+          "true_positive": 0,
+          "false_positive": 0,
+          "false_negative": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "iou": null,
+          "error_loss": null
+        },
+        "11": {
+          "support": 0,
+          "true_positive": 0,
+          "false_positive": 2257,
+          "false_negative": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "iou": null,
+          "error_loss": null
+        },
+        "64": {
+          "support": 0,
+          "true_positive": 0,
+          "false_positive": 0,
+          "false_negative": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "iou": null,
+          "error_loss": null
+        }
+      },
+      "derived_for_comparison": {
+        "primary_loss": 0.027755770719410836,
+        "balanced_accuracy": 0.9722442292805892,
+        "status": "Retrospective arithmetic from saved confusion counts under the newly preregistered objective; not a fresh prediction or an originally reported primary metric."
+      },
+      "printed_table_values": {
+        "accuracy_percent": "97.36",
+        "macro_iou_percent": "96.58",
+        "tree_iou_percent": "98.11",
+        "grass_iou_percent": "95.06"
+      },
+      "source_stored_confusion": {
+        "labels": [
+          "unlabelled",
+          "grass",
+          "tree",
+          "building",
+          "pavement/sidewalk/parking",
+          "vehicle"
+        ],
+        "confusion_matrix": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            314,
+            70262,
+            845,
+            0,
+            2257,
+            0
+          ],
+          [
+            540,
+            237,
+            84163,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ]
+      }
+    },
+    "height_check": {
+      "label": "Height check",
+      "source": {
+        "path": "research_paper_documents_and_drafts/annotation_pilot/tree_height_experiment/results.json",
+        "sha256": "0232a1ffb34c53d83fa11857fd5acec360027b55765d0bb421a5f7d61b58b636"
+      },
+      "artifact_json_pointer": "/scores and /metrics",
+      "manuscript_locations": [
+        "Table 7 p. 16",
+        "Section 5.3 pp. 16-17"
+      ],
+      "historical_date": "2026-09-14T13:57:10.110201-04:00",
+      "scored_points": 158618,
+      "correct_points": 154321,
+      "error_points": 4297,
+      "unlabelled_points": 1776,
+      "invalid_points": 0,
+      "overall_accuracy": 0.9729097580350275,
+      "macro_iou": 0.9699304930623017,
+      "reference_codes": [
+        3,
+        5,
+        6,
+        11,
+        64
+      ],
+      "prediction_outcomes": [
+        3,
+        5,
+        6,
+        11,
+        64,
+        "unlabelled",
+        "invalid"
+      ],
+      "confusion_matrix": [
+        [
+          70263,
+          0,
+          0,
+          2257,
+          0,
+          1158,
+          0
+        ],
+        [
+          264,
+          84058,
+          0,
+          0,
+          0,
+          618,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "per_class": {
+        "3": {
+          "support": 73678,
+          "true_positive": 70263,
+          "false_positive": 264,
+          "false_negative": 3415,
+          "precision": 0.9962567527329959,
+          "recall": 0.9536496647574582,
+          "f1": 0.9744877084705801,
+          "iou": 0.9502447864542479,
+          "error_loss": 0.04635033524254187
+        },
+        "5": {
+          "support": 84940,
+          "true_positive": 84058,
+          "false_positive": 0,
+          "false_negative": 882,
+          "precision": 1.0,
+          "recall": 0.9896161996703555,
+          "f1": 0.9947810033254831,
+          "iou": 0.9896161996703555,
+          "error_loss": 0.010383800329644454
+        },
+        "6": {
+          "support": 0,
+          "true_positive": 0,
+          "false_positive": 0,
+          "false_negative": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "iou": null,
+          "error_loss": null
+        },
+        "11": {
+          "support": 0,
+          "true_positive": 0,
+          "false_positive": 2257,
+          "false_negative": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "iou": null,
+          "error_loss": null
+        },
+        "64": {
+          "support": 0,
+          "true_positive": 0,
+          "false_positive": 0,
+          "false_negative": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "iou": null,
+          "error_loss": null
+        }
+      },
+      "derived_for_comparison": {
+        "primary_loss": 0.028367067786093162,
+        "balanced_accuracy": 0.9716329322139068,
+        "status": "Retrospective arithmetic from saved confusion counts under the newly preregistered objective; not a fresh prediction or an originally reported primary metric."
+      },
+      "printed_table_values": {
+        "accuracy_percent": "97.29",
+        "macro_iou_percent": "96.99",
+        "tree_iou_percent": "98.96",
+        "grass_iou_percent": "95.02"
+      },
+      "source_stored_confusion": {
+        "labels": [
+          "unlabelled",
+          "grass",
+          "tree",
+          "building",
+          "pavement/sidewalk/parking",
+          "vehicle"
+        ],
+        "confusion_matrix": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1158,
+            70263,
+            0,
+            0,
+            2257,
+            0
+          ],
+          [
+            618,
+            264,
+            84058,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ]
+      },
+      "paired_changes_from_saved_pipeline": {
+        "previous_errors_corrected": 72,
+        "previous_correct_points_broken": 176,
+        "reviewed_label_changes": 1047,
+        "unreviewed_label_changes": 12683,
+        "net_additional_errors": 104
+      },
+      "historical_prediction_sha256_as_recorded": "a4ce4b88d141b5df16b408f49672c7a9314aed1f603af48ec14643814076d6d3",
+      "historical_change_description": "Opt-in tree height > existing 6 ft threshold before painting; invalid smoothed tree reverts to supported pre-smoothing label. No greenness or map-back changes."
+    },
+    "smoothing_checks": {
+      "label": "Smoothing checks",
+      "source": {
+        "path": "research_paper_documents_and_drafts/annotation_pilot/physical_smoothing_only/results.json",
+        "sha256": "d47c1b6775b0ec7c905c1bda37e85cccf07bb746d1041350ad29d7116c8a4be1"
+      },
+      "artifact_json_pointer": "/scores and /metrics",
+      "manuscript_locations": [
+        "Table 7 p. 16",
+        "Section 5.3 pp. 16-17"
+      ],
+      "historical_date": "2026-09-14T14:03:15.650955-04:00",
+      "scored_points": 158618,
+      "correct_points": 154364,
+      "error_points": 4254,
+      "unlabelled_points": 1415,
+      "invalid_points": 0,
+      "overall_accuracy": 0.9731808495883191,
+      "macro_iou": 0.9684437212211336,
+      "reference_codes": [
+        3,
+        5,
+        6,
+        11,
+        64
+      ],
+      "prediction_outcomes": [
+        3,
+        5,
+        6,
+        11,
+        64,
+        "unlabelled",
+        "invalid"
+      ],
+      "confusion_matrix": [
+        [
+          70185,
+          582,
+          0,
+          2257,
+          0,
+          654,
+          0
+        ],
+        [
+          0,
+          84179,
+          0,
+          0,
+          0,
+          761,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "per_class": {
+        "3": {
+          "support": 73678,
+          "true_positive": 70185,
+          "false_positive": 0,
+          "false_negative": 3493,
+          "precision": 1.0,
+          "recall": 0.952591004098917,
+          "f1": 0.9757199557912737,
+          "iou": 0.952591004098917,
+          "error_loss": 0.04740899590108309
+        },
+        "5": {
+          "support": 84940,
+          "true_positive": 84179,
+          "false_positive": 582,
+          "false_negative": 761,
+          "precision": 0.9931336345725038,
+          "recall": 0.9910407346362138,
+          "f1": 0.9920860808127235,
+          "iou": 0.9842964383433502,
+          "error_loss": 0.008959265363786202
+        },
+        "6": {
+          "support": 0,
+          "true_positive": 0,
+          "false_positive": 0,
+          "false_negative": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "iou": null,
+          "error_loss": null
+        },
+        "11": {
+          "support": 0,
+          "true_positive": 0,
+          "false_positive": 2257,
+          "false_negative": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "iou": null,
+          "error_loss": null
+        },
+        "64": {
+          "support": 0,
+          "true_positive": 0,
+          "false_positive": 0,
+          "false_negative": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "iou": null,
+          "error_loss": null
+        }
+      },
+      "derived_for_comparison": {
+        "primary_loss": 0.028184130632434648,
+        "balanced_accuracy": 0.9718158693675654,
+        "status": "Retrospective arithmetic from saved confusion counts under the newly preregistered objective; not a fresh prediction or an originally reported primary metric."
+      },
+      "printed_table_values": {
+        "accuracy_percent": "97.32",
+        "macro_iou_percent": "96.84",
+        "tree_iou_percent": "98.43",
+        "grass_iou_percent": "95.26"
+      },
+      "source_stored_confusion": {
+        "labels": [
+          "unlabelled",
+          "grass",
+          "tree",
+          "building",
+          "pavement/sidewalk/parking",
+          "vehicle"
+        ],
+        "confusion_matrix": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            654,
+            70185,
+            582,
+            0,
+            2257,
+            0
+          ],
+          [
+            761,
+            0,
+            84179,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ]
+      },
+      "paired_changes_from_saved_pipeline": {
+        "previous_errors_corrected": 99,
+        "previous_correct_points_broken": 160,
+        "reviewed_label_changes": 759,
+        "unreviewed_label_changes": 8911,
+        "net_additional_errors": 61
+      },
+      "historical_prediction_sha256_as_recorded": "8b261fed062fb3f2304a4a13a7e8f362f5c9979ee37d2c90ab011ac3babe86e9",
+      "historical_change_description": "Physical validation of every smoothed class using existing vetoes; invalid or unlabelled proposals retain supported pre-smoothing label. Tree height guard enabled: False. No thresholds or map-back changes."
+    },
+    "both_combined": {
+      "label": "Both combined",
+      "source": {
+        "path": "research_paper_documents_and_drafts/annotation_pilot/physical_smoothing_height/results.json",
+        "sha256": "3827d903cd39b45ee60c90c307c437319df8063b3584907d995d40024d94c8cb"
+      },
+      "artifact_json_pointer": "/scores and /metrics",
+      "manuscript_locations": [
+        "Table 7 p. 16",
+        "Section 5.3 pp. 16-17"
+      ],
+      "historical_date": "2026-09-14T14:03:16.480827-04:00",
+      "scored_points": 158618,
+      "correct_points": 154292,
+      "error_points": 4326,
+      "unlabelled_points": 2069,
+      "invalid_points": 0,
+      "overall_accuracy": 0.9727269288479239,
+      "macro_iou": 0.9713929405608313,
+      "reference_codes": [
+        3,
+        5,
+        6,
+        11,
+        64
+      ],
+      "prediction_outcomes": [
+        3,
+        5,
+        6,
+        11,
+        64,
+        "unlabelled",
+        "invalid"
+      ],
+      "confusion_matrix": [
+        [
+          70186,
+          0,
+          0,
+          2257,
+          0,
+          1235,
+          0
+        ],
+        [
+          0,
+          84106,
+          0,
+          0,
+          0,
+          834,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "per_class": {
+        "3": {
+          "support": 73678,
+          "true_positive": 70186,
+          "false_positive": 0,
+          "false_negative": 3492,
+          "precision": 1.0,
+          "recall": 0.9526045766714623,
+          "f1": 0.975727075571373,
+          "iou": 0.9526045766714623,
+          "error_loss": 0.04739542332853769
+        },
+        "5": {
+          "support": 84940,
+          "true_positive": 84106,
+          "false_positive": 0,
+          "false_negative": 834,
+          "precision": 1.0,
+          "recall": 0.9901813044502001,
+          "f1": 0.995066431622162,
+          "iou": 0.9901813044502001,
+          "error_loss": 0.009818695549799859
+        },
+        "6": {
+          "support": 0,
+          "true_positive": 0,
+          "false_positive": 0,
+          "false_negative": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "iou": null,
+          "error_loss": null
+        },
+        "11": {
+          "support": 0,
+          "true_positive": 0,
+          "false_positive": 2257,
+          "false_negative": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "iou": null,
+          "error_loss": null
+        },
+        "64": {
+          "support": 0,
+          "true_positive": 0,
+          "false_positive": 0,
+          "false_negative": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "iou": null,
+          "error_loss": null
+        }
+      },
+      "derived_for_comparison": {
+        "primary_loss": 0.028607059439168775,
+        "balanced_accuracy": 0.9713929405608313,
+        "status": "Retrospective arithmetic from saved confusion counts under the newly preregistered objective; not a fresh prediction or an originally reported primary metric."
+      },
+      "printed_table_values": {
+        "accuracy_percent": "97.27",
+        "macro_iou_percent": "97.14",
+        "tree_iou_percent": "99.02",
+        "grass_iou_percent": "95.26"
+      },
+      "source_stored_confusion": {
+        "labels": [
+          "unlabelled",
+          "grass",
+          "tree",
+          "building",
+          "pavement/sidewalk/parking",
+          "vehicle"
+        ],
+        "confusion_matrix": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1235,
+            70186,
+            0,
+            0,
+            2257,
+            0
+          ],
+          [
+            834,
+            0,
+            84106,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ]
+      },
+      "paired_changes_from_saved_pipeline": {
+        "previous_errors_corrected": 171,
+        "previous_correct_points_broken": 304,
+        "reviewed_label_changes": 1485,
+        "unreviewed_label_changes": 19107,
+        "net_additional_errors": 133
+      },
+      "historical_prediction_sha256_as_recorded": "7ef6bded956528c9172cc7d8cd36f4dad7001b0de2d9fa81d9a13243c49a608b",
+      "historical_change_description": "Physical validation of every smoothed class using existing vetoes; invalid or unlabelled proposals retain supported pre-smoothing label. Tree height guard enabled: True. No thresholds or map-back changes."
+    }
+  },
+  "verification": {
+    "all_five_full_confusion_matrices_found": true,
+    "reported_accuracy_error_counts_and_macro_iou_recomputed_from_saved_counts": true,
+    "all_equal_to_saved_json_with_tolerance": 1e-14,
+    "all_supports_match": true,
+    "no_predictions_generated": true,
+    "no_reference_labels_created_or_changed": true
+  },
+  "m1_rerun_limits": [
+    "A frozen fresh end-to-end run can establish the current method-to-output link. It cannot recover unknown July checkpoint/configuration/source/cache provenance retroactively.",
+    "Differences from historical Tables 5-7 must be reported rather than tuned away. Current tile-C-only preprocessing and crop-origin/context differ from historical survey-wide preprocessing; those changes can alter DTM/HAG, ortho sampling, object scale and grid phase as well as inference.",
+    "Exact reproduction of a deterministic new run on this machine does not establish bitwise portability across backend/hardware/library versions; capture those identities and verify reruns rather than assume.",
+    "Reference label independence and acquisition/colorization provenance remain unresolved by inference. Human M3 audit and provider/PI M5 records are still needed.",
+    "One selected development patch and component sweeps on it do not establish held-out generalization or asset-owner utility."
+  ],
+  "review_items": {
+    "M1": {
+      "review_lines": [
+        139,
+        141
+      ],
+      "required_evidence": "Frozen current run manifest, raw-to-prediction route, output hashes and documented historical/new differences."
+    },
+    "M2": {
+      "review_lines": [
+        143,
+        145
+      ],
+      "required_evidence": "Spatially separated final regions with independent references; no pointwise-independent confidence intervals."
+    },
+    "M3": {
+      "review_lines": [
+        147,
+        149
+      ],
+      "required_evidence": "Prediction-blind human semantic audit and documented uncertainty/adjudication; package generation alone is partial."
+    },
+    "M4": {
+      "review_lines": [
+        151,
+        153
+      ],
+      "required_evidence": "Matched components, explicit geometry/color/mask/constraint/smoothing/transfer controls and each full confusion matrix."
+    },
+    "M5": {
+      "review_lines": [
+        155,
+        157
+      ],
+      "required_evidence": "Provider acquisition/colorization/CRS records plus bounded measured density/RGB checks; unknown provenance stays unknown."
+    },
+    "M6": {
+      "review_lines": [
+        159,
+        161
+      ],
+      "required_evidence": "Preregistered objective/costs plus class taxonomy/export crosswalk and abstention/invalid outcomes."
+    },
+    "M7": {
+      "review_lines": [
+        163,
+        165
+      ],
+      "required_evidence": "Bounded sensitivity, surface/fallback/boundary splits, explicit parameter selection; true terrain accuracy needs independent reference."
+    },
+    "M8": {
+      "review_lines": [
+        167,
+        169
+      ],
+      "required_evidence": "Literature positioning and a defined engineering endpoint; runtime/memory help, but semantic pilot metrics cannot establish operational utility."
+    }
+  },
+  "comparison_report_plan": [
+    "Show saved July baseline/pipeline and fresh bounded baseline/pipeline as separate rows with explicit evidence dates and context; columns N, class-balanced loss, overall accuracy, macro IoU, errors, abstention and invalid counts.",
+    "Tag historical class-balanced loss as retrospective arithmetic, with all input count sources linked. Do not label it an original paper metric.",
+    "Compare historical variants to fresh counterparts only when their exact definitions and inputs are matched; otherwise state not comparable rather than attributing differences to one component.",
+    "For fresh component verdict, use paired frozen inputs and primary loss before discussing secondary metrics; show regressions as prominently as gains.",
+    "Publish all rectangular confusion matrices, region/stratum denominators, transfer/fallback share, runtime/memory and a row-level source artifact link."
+  ]
+}

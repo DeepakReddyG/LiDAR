@@ -1,0 +1,8 @@
+{
+  "output/metrics.json": "bb78d10b71492c76e931a6dc7f6a1a318bb82158b1c95598a23a6255b7fcbf5c",
+  "output/label_grid.npy": "5d65c4f4d4a0efcdecce911302cd92c3365f3cc1e627e2869cd3e097d3298bb9",
+  "output/score_grid.npy": "618adf1147248ba73f0b0adfd93ef88aaffb0a5e475713c2c6dcaebea67c6579",
+  "output/pilot_predictions.las": "285c5cfb0fe901420864346f5ce33417072ead9ef96524f76ccccd012df14506",
+  "output/veto_stats.json": "2e5cd3a5e823e4bb32eab3d41315ab8a1b2a20471dc7a23f6f34b379d634ae05",
+  "output/pilot_arrays.npz": "f160cf6d3e8e2c5fdb3fffecc508f893ede5065342ad93250fded446a065ab33"
+}
