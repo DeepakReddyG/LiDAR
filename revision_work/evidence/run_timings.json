@@ -1,0 +1,22 @@
+{
+  "fixed_anchor": {
+    "wall_seconds": 16.658999919891357,
+    "full_component_matrix": false
+  },
+  "grid_025": {
+    "wall_seconds": 16.61227011680603,
+    "full_component_matrix": false
+  },
+  "grid_1": {
+    "wall_seconds": 16.369837045669556,
+    "full_component_matrix": false
+  },
+  "rgb_band_075": {
+    "wall_seconds": 16.545591831207275,
+    "full_component_matrix": false
+  },
+  "rgb_band_3": {
+    "wall_seconds": 16.67151403427124,
+    "full_component_matrix": false
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "analysis/metrics.json": "59cc8a464871e1bd5599f5c6bf413787682a33d3ee149fad0e7916154188c87a",
+  "analysis/sam3_c1_s1_height_aware_predictions.npz": "20797c21497b69d661bc9f746217eb9081f660b835ea5923ffd8aa40cfe0427f",
+  "analysis/sam3_c1_s1_height_aware_grids.npz": "afb58cc51d65eddb68df150f6ff0c5c43145f883879901aa702e8773fe243738",
+  "analysis/sam3_c1_s1_height_aware_veto.json": "e140a153ab6228ae96b0834cc622f527fde42c00ce144710f661226aeafaaf0e",
+  "analysis/pilot_predictions.las": "7409f2826aa7ca1a4d74659d6091f8fa4bafc3a9369529690ea5bd506a631d3b",
+  "analysis/pilot_arrays.npz": "8f431928524ca8c193b90a42a41abe7b067d4adcc23072254f1420f3ceb68c11"
+}
