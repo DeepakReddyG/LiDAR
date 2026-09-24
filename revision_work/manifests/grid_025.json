@@ -1,0 +1,276 @@
+{
+  "schema_version": 1,
+  "phase": 3,
+  "source_git_commit": "208ece48b5bd7746e2c143a97ba1f427336ff515",
+  "source_policy": "Corrected frozen source; no changed references or historical caches",
+  "source_root": "revision_work/fixed_source",
+  "source_hashes": {
+    "revision_work/fixed_source/config.py": "5b43711285f15174f94e9d8f9360279c511fee5d3991449e61c63027e8db295d",
+    "revision_work/fixed_source/main.py": "68fef150646e28554f1c706e334f54b02e5be6539d5192fd670b26abf4b08195",
+    "revision_work/fixed_source/classification/baseline.py": "d08a3ff2ed3b6400f0692292cfd2cbb2c67d6eadd16d5863c2827c65284e5383",
+    "revision_work/fixed_source/classification/fuse.py": "f493794add2ac339dabca609ee09ee62e26fd5f800cc3f5873bdaa7ddde06764",
+    "revision_work/fixed_source/segmentation/segment_sam3.py": "b9884058db5ceb3d88494be96e9be049577cd208a0c5ef9c0b9bac50ffc03fd4",
+    "revision_work/fixed_source/evaluation/evaluate.py": "36ead5c4f128e2ffb2949352ed61d6cdfab7f0c596dedf05225a23b0416f5c44",
+    "revision_work/fixed_source/reprojection/map_back.py": "cc830b4aec8ab656108a408d9a5ba938c9dfbe15586a9f0db13c14130b28d737",
+    "revision_work/fixed_source/projection/grid.py": "0082eb683e22dd1b0f94d513d8e8695dc4b75811f6b73c74e8717697d7f52c0b",
+    "revision_work/fixed_source/projection/ortho.py": "c3a4532393c76b875cfe27d3deddc8a386a81079762156b6a98af15dfa32c439",
+    "revision_work/fixed_source/projection/features.py": "73d79b022ef802b2bdf4ece3e2be19af211de6d0b8291ccef015f12f63fbd381",
+    "revision_work/fixed_source/projection/ground.py": "5a014e09f793f1abc9559c6057a7660b78d97a74d0a6768091eaac9e0a2a2797",
+    "segmentation/mlx_sam3/sam3/__init__.py": "7e0230eec57e2f971e43b01f97d73ce41ad6b7f5ec5e84789c5f1084b18abf57",
+    "segmentation/mlx_sam3/sam3/convert.py": "49876d969c3ee52b6db3fb1233cb10a252a8b717d830370785e65d5fd657104e",
+    "segmentation/mlx_sam3/sam3/model/box_ops.py": "cce0e37459ce3448e609cb73213148f58f5c189eeb70f93244e92729301e8c5e",
+    "segmentation/mlx_sam3/sam3/model/data_misc.py": "be4bfa2de42f1215007bffe7f30f54083281d055bb7a792cb45549463ee74c24",
+    "segmentation/mlx_sam3/sam3/model/decoder.py": "4328bcd1a0d7fc2ccf1d5b6959832435fbd951e1d7603aa644798aca27834ffe",
+    "segmentation/mlx_sam3/sam3/model/encoder.py": "c4357fca2e64a4551c6b7b16e02bccf199abb0691f22d370e872a5b491ecd5ee",
+    "segmentation/mlx_sam3/sam3/model/geometry_encoders.py": "2e0fa82dc0448966d2a8af1203307f073253fe47a43ce9b65fc6ec0b541c4250",
+    "segmentation/mlx_sam3/sam3/model/grid_sample_mlx.py": "7d150c76912a628477d0fc0070facadf742211572aa70bb5771dbf899aa376e2",
+    "segmentation/mlx_sam3/sam3/model/maskformer_segmentation.py": "2c3ed14d43afc3af370db5c0250c2a1b9ff2c34f90978f6db25447b31563ea0c",
+    "segmentation/mlx_sam3/sam3/model/model_misc.py": "1d65b3936a1b3d98dd1fc4bcf150c69335f4ebe0e540fc98ca6a9a9fdd642df8",
+    "segmentation/mlx_sam3/sam3/model/necks.py": "28d5ac09e21020fb6e902c7697f5d1a62c5b90938d136c7481f9e856425f5101",
+    "segmentation/mlx_sam3/sam3/model/position_encoding.py": "12c9a7e6ed447bf701f9c323547cf7066054c509f87dbd9f15b56436b6381e83",
+    "segmentation/mlx_sam3/sam3/model/roi_align.py": "265dfd7c3c80c0826412e4e06e9240fee985b090e556c2babcc80c5274c8c6d0",
+    "segmentation/mlx_sam3/sam3/model/sam3_image.py": "238777853f11daaa63a823e96eb505a71a9ff28b878027c3dc183594be1a3bbc",
+    "segmentation/mlx_sam3/sam3/model/sam3_image_processor.py": "5a7f93d22836c5aeb4ea11b841ea22c7a87e19887194a5c9dd820ad1b0a5717d",
+    "segmentation/mlx_sam3/sam3/model/text_encoder_ve.py": "79fd20b253f7fba5af747bbfa766dd57dc05b06d2d832b4dda9d0ba341624c9a",
+    "segmentation/mlx_sam3/sam3/model/tokenizer_ve.py": "4d0bd0f84173ec9d8a7d7069d223e53e6b21cba85df71e406ecf9ebb933875df",
+    "segmentation/mlx_sam3/sam3/model/vitdet.py": "806fe221abbde4bcc1ce82d6ee85653d747a1318bd876528e411e4a06d1a28cc",
+    "segmentation/mlx_sam3/sam3/model/vl_combiner.py": "0c300f5d33b07ecef5130ac7f2ac9167b0197c70f2c88ed603771bbb415e6f55",
+    "segmentation/mlx_sam3/sam3/model_builder.py": "2431378f4af5580075d9684f2e201538c96140640199261b5b9b19f384b99f6e",
+    "segmentation/mlx_sam3/sam3/utils.py": "10b87eec47bd707c047c14bc785f106a1aa0432bd25d59e017914bd09aec8447",
+    "segmentation/mlx_sam3/sam3/visualization_utils.py": "f3f77379a60bbe81af5239041731c613bab6e1b2a29180ae91408be3bf1b9db7",
+    "segmentation/mlx_sam3/assets/bpe_simple_vocab_16e6.txt.gz": "924691ac288e54409236115652ad4aa250f48203de50a9e4722a6ecd48d6804a",
+    "revision/__init__.py": "f01de2240a24e33cca3dba086e6d349199859eab55372d426c5388482f0c17a2",
+    "revision/guard.py": "8d06768a3701f9549544b66c30d68e18ffa3aab0bb99d6ed8ce2542c93552453",
+    "revision/metrics.py": "fa1fc850fafd9755d2770542b7a299da65e629ac4cd32b8b262af20c3fdde844",
+    "revision/sam_worker.py": "0df5e63ac19999c28b86280b05a8b415da7c610d3c9fe3b15023c4c815cd7b4b",
+    "revision/runner.py": "9d1c51bdbad0ff9f2b0e798ffe15b766b5d787eb5aeca48e2824a3a031727824",
+    "revision/components.py": "626b5c55fde820ed603e1fd06ffb4cc166cd2c4765358ea35cfb5b8881b66e60",
+    "revision/experiments.py": "dd4a90d3e41f73963b68d3b9f0af2547e912065a0d6f0cdf43b3af480a8f5e46",
+    "revision/units.py": "2b165c33c009727897d6303756cb18c3cb7eac3dd760839255409d0609396b06"
+  },
+  "protocol": {
+    "holdout_sha256": "121696648105e06a0571da19529e8f6eb03e2d8fb47fe4939a95fc6263e9637a",
+    "objective_sha256": "aa34e52612c2f08601199513df4a5fb84528f9dac1efae6136da9d956a9554ee"
+  },
+  "dataset": {
+    "input": "data/eval/tile_c.las",
+    "input_sha256": "2fbb019d7c6438f696339f1d5715a0c0d5b157fc603b54021e3f3153aef4680f",
+    "reference": "data/eval/tile_c_gt.las",
+    "reference_sha256": "24380bb9533881236c39584c1cd61ded990bdaba174579466267ac75b5c9b035",
+    "context_bounds": [
+      1391184.38,
+      448035.05,
+      1391334.38,
+      448185.05
+    ],
+    "score_bounds": [
+      1391205.0,
+      448075.0,
+      1391245.0,
+      448105.0
+    ],
+    "header": {
+      "points": 2505937,
+      "point_format": 8,
+      "las_version": "1.4",
+      "scale": [
+        0.001,
+        0.001,
+        0.001
+      ],
+      "offset": [
+        1391156.1803071403,
+        447749.84950989706,
+        921.201416953068
+      ],
+      "bounds": [
+        [
+          1391184.3803071403,
+          448035.0495098971,
+          866.083416953068
+        ],
+        [
+          1391334.3803071403,
+          448185.0495098971,
+          922.753416953068
+        ]
+      ],
+      "crs": "UNKNOWN - needs provider/PI"
+    },
+    "units": "US survey feet - explicit project configuration; source header CRS absent",
+    "sensor": "UNKNOWN - needs provider/PI",
+    "acquisition_date": "UNKNOWN - needs provider/PI",
+    "colorization": "UNKNOWN - needs provider/PI",
+    "provider": "UNKNOWN - needs provider/PI"
+  },
+  "model": {
+    "checkpoint": "/Users/deepakreddygathpa/.cache/huggingface/hub/models--mlx-community--sam3-image/snapshots/b72a14d8127e17e6f2a3d2e075bbbf4307ba146e/model.safetensors",
+    "sha256": "0ad4c3f42ecf706c4cda63cf58d621699491ed65012b3999284ea370984f7173",
+    "repository": "mlx-community/sam3-image",
+    "snapshot": "b72a14d8127e17e6f2a3d2e075bbbf4307ba146e",
+    "backend": "local MLX code under segmentation/mlx_sam3; dedicated pinned worker",
+    "device": "gpu",
+    "seed": 0,
+    "raw_score_floor": 0.1,
+    "processor_resolution": 1008,
+    "resize": "PIL LANCZOS RGB to 1008x1008",
+    "normalize": "float32 RGB /255 then (x-0.5)/0.5"
+  },
+  "environment": {
+    "python": "3.13.15 (main, Aug  5 2026, 12:25:43) [Clang 21.0.0 (clang-2100.1.1.101)]",
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "packages": {
+      "numpy": "2.4.6",
+      "laspy": "2.7.0",
+      "pillow": "12.2.0",
+      "opencv-python-headless": "5.0.0.93",
+      "cloth-simulation-filter": "1.1.7",
+      "matplotlib": "3.10.9",
+      "mlx": "0.32.0",
+      "mlx-metal": "0.32.0",
+      "mlx-sam3": "0.1.0",
+      "huggingface-hub": "1.25.1",
+      "scipy": "1.18.0"
+    }
+  },
+  "parameters": {
+    "GRID_RESOLUTION": 0.25,
+    "CHUNK_SIZE": 10000000,
+    "DECIMATE_CELL": 2.0,
+    "CLOTH_RESOLUTION": 2.0,
+    "GROUND_OUTLIER_FT": 5.0,
+    "DTM_GAPFILL_WINDOWS": [
+      5,
+      17,
+      65
+    ],
+    "TOP_SURFACE_FT": 1.5,
+    "TILE_SIZE": 1024,
+    "TILE_STRIDE": 768,
+    "RGB_16BIT_TO_8BIT_DIVISOR": 257.0,
+    "INPAINT_RADIUS_PX": 3,
+    "BBOX_FRAC_MAX": 0.8,
+    "MAJORITY_FILTER_SIZE": 5,
+    "VETO": {
+      "tree_exg": 0.1,
+      "tree_hag": 6.0,
+      "grass_exg": 0.05,
+      "grass_hag": 2.0,
+      "building_hag": 8.0,
+      "pavement_hag": 1.5,
+      "vehicle_hag": [
+        1.0,
+        9.0
+      ]
+    },
+    "FUSE_PRIORITY": [
+      "vehicle",
+      "tree",
+      "building",
+      "sidewalk",
+      "parking",
+      "pavement",
+      "grass"
+    ],
+    "MAP_BACK": {
+      "surface_ft": 3.0,
+      "below_tree_hag": 2.0,
+      "below_grass_exg": 0.05,
+      "rule_conf": 128
+    },
+    "BASELINE": {
+      "veg_exg": 0.05,
+      "hard_exg": 0.05,
+      "tree_hag": 6.0,
+      "grass_hag": 2.0,
+      "building_hag": 8.0,
+      "pavement_hag": 1.5
+    },
+    "CLASSES": {
+      "0": {
+        "name": "pavement",
+        "prompt": "road",
+        "threshold": 0.3,
+        "las_code": 11
+      },
+      "1": {
+        "name": "sidewalk",
+        "prompt": "sidewalk",
+        "threshold": 0.3,
+        "las_code": 11
+      },
+      "2": {
+        "name": "parking",
+        "prompt": "parking lot",
+        "threshold": 0.3,
+        "las_code": 11
+      },
+      "3": {
+        "name": "grass",
+        "prompt": "grass",
+        "threshold": 0.35,
+        "las_code": 3
+      },
+      "4": {
+        "name": "tree",
+        "prompt": "tree",
+        "threshold": 0.45,
+        "las_code": 5
+      },
+      "5": {
+        "name": "building",
+        "prompt": "building",
+        "threshold": 0.5,
+        "las_code": 6
+      },
+      "6": {
+        "name": "vehicle",
+        "prompt": "car",
+        "threshold": 0.5,
+        "las_code": 64
+      }
+    },
+    "UNLABELLED_LAS_CODE": 1
+  },
+  "csf_parameters": {
+    "bSloopSmooth": false,
+    "class_threshold": 0.5,
+    "cloth_resolution": 2.0,
+    "interations": 500,
+    "rigidness": 3,
+    "time_step": 0.65
+  },
+  "cache": {
+    "policy": "fresh raw responses in a new run directory; subsequent reuse requires recorded image/checkpoint/code identity",
+    "historical_cache_used": false
+  },
+  "variant": "registered component matrix; baseline and historical rule variants separately identified",
+  "output_root": "revision_work/runs/grid_025",
+  "boundary_definition": "Reviewed points within Euclidean 3D distance <=1.0 ft of any reviewed point of another class, or within horizontal distance <=1.0 ft of the pilot perimeter; unreviewed points excluded; evaluation-only, never a predictor",
+  "reference_role": "read only after predictions are produced; never preprocessing or inference",
+  "source_exclusions": [
+    "Annotation and component utilities are independent and not imported by Phase1"
+  ],
+  "supersedes_failed_attempt": null,
+  "base_manifest_path": "revision_work/manifests/phase1_fresh_v3.json",
+  "base_manifest_sha256": "b56ee7f1c96781ca690b1d8081d8779a68cfe15641d66ac0121e52bf0be7d3c7",
+  "units_validation": {
+    "schema_version": 1,
+    "configured_coordinate_units": "US survey foot",
+    "configured_unit_to_metre": 0.3048006096012192,
+    "configured_unit_to_metre_exact": "1200/3937",
+    "input_assumption": "US survey foot",
+    "metadata_source": "LAS header has no declared CRS",
+    "coordinates_rescaled": false,
+    "crs": "UNKNOWN - needs provider/PI",
+    "crs_wkt": null,
+    "axes": [],
+    "horizontal_units_status": "assumed; CRS absent",
+    "vertical_units_status": "assumed; CRS absent",
+    "vertical_datum": "UNKNOWN - needs provider/PI",
+    "vertical_datum_basis": "No CRS supplied or declared",
+    "provider_confirmation_required": true
+  },
+  "experiment_id": "grid_025",
+  "registered_plan_sha256": "a080ab3fe42d9df4edc25b0ad4dd4dc48f011a21646720c1fe7c432e427748bc"
+}
