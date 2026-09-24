@@ -6,7 +6,7 @@ import struct
 import numpy as np
 import pytest
 
-from revision.sam_worker import load_jobs, mask_to_rle, safetensor_shapes, sha256
+from revision.sam_worker import checkpoint_loader_path, load_jobs, mask_to_rle, safetensor_shapes, sha256
 
 
 @pytest.mark.parametrize("shape", [(1, 1), (2, 3), (13, 17)])
@@ -69,3 +69,20 @@ def test_shape_reader_reads_only_declared_tensor_header(tmp_path):
 def test_invalid_mask_has_clear_error():
     with pytest.raises(ValueError, match="nonempty 2D"):
         mask_to_rle(np.zeros((0, 2)))
+
+
+def test_checkpoint_symlink_preserves_format_suffix_and_hash(tmp_path):
+    blob = tmp_path / "blobs" / "content-addressed-no-extension"
+    blob.parent.mkdir()
+    blob.write_bytes(b"synthetic checkpoint bytes")
+    snapshot = tmp_path / "snapshots" / "revision" / "model.safetensors"
+    snapshot.parent.mkdir(parents=True)
+    snapshot.symlink_to(blob)
+    loader_path = checkpoint_loader_path(snapshot)
+    assert loader_path.is_absolute()
+    assert loader_path == snapshot
+    assert loader_path.suffix == ".safetensors"
+    assert loader_path.resolve() == blob
+    assert sha256(loader_path) == sha256(blob)
+    with pytest.raises(ValueError, match="retain the .safetensors"):
+        checkpoint_loader_path(blob)

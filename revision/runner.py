@@ -224,7 +224,7 @@ def make_manifest(path, checkpoint):
             "provider": UNKNOWN,
         },
         "model": {
-            "checkpoint": str(Path(checkpoint).resolve()),
+            "checkpoint": str(Path(checkpoint).absolute()),
             "sha256": sha(checkpoint),
             "repository": "mlx-community/sam3-image",
             "snapshot": "b72a14d8127e17e6f2a3d2e075bbbf4307ba146e",

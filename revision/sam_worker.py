@@ -31,6 +31,22 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def checkpoint_loader_path(path: str | Path) -> Path:
+    """Retain the lexical suffix: MLX infers format from the supplied filename.
+
+    Hugging Face snapshots commonly symlink model.safetensors to an
+    extensionless content-addressed blob. Resolve only to validate existence;
+    pass the absolute snapshot pathname, not its blob target, to MLX.
+    """
+    lexical = Path(os.path.abspath(Path(path).expanduser()))
+    physical = lexical.resolve(strict=True)
+    if not physical.is_file():
+        raise ValueError("Checkpoint must be a regular file")
+    if lexical.suffix != ".safetensors":
+        raise ValueError("Checkpoint loader path must retain the .safetensors filename")
+    return lexical
+
+
 def mask_to_rle(mask) -> dict:
     """C-order alternating background/foreground runs, compatible with backend."""
     import numpy as np
@@ -141,7 +157,7 @@ def main(argv=None) -> int:
         for job in jobs:
             if not job["image"].is_relative_to(output_root / "slices/tiles") or not job["output"].is_relative_to(output_root / "masks/raw"):
                 raise ValueError("Inference job is outside parent manifest's isolated image/raw-response directories")
-    checkpoint = Path(args.checkpoint).resolve(strict=True)
+    checkpoint = checkpoint_loader_path(args.checkpoint)
     digest = sha256(checkpoint)
     if args.expected_checkpoint_sha256 and digest != args.expected_checkpoint_sha256:
         raise ValueError("Checkpoint hash mismatch")
@@ -152,6 +168,7 @@ def main(argv=None) -> int:
         manifest["parent_manifest_sha256"] = sha256(manifest_path)
     manifest.update({
         "checkpoint_path": str(checkpoint), "checkpoint_sha256": digest,
+        "checkpoint_physical_path": str(checkpoint.resolve(strict=True)),
         "checkpoint_bytes": checkpoint.stat().st_size,
         "checkpoint_tensor_count": len(shapes), "seed": args.seed,
         "backend": "local MLX SAM3 on Metal; explicit checkpoint; network disabled",
