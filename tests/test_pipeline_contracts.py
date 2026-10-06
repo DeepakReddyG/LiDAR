@@ -156,3 +156,29 @@ def test_merged_partial_gt_scores_baseline_and_pipeline(tmp_path, monkeypatch):
     run_evaluate_all()
     for name in ("baseline_scores.json", "sam3_scores.json"):
         assert json.loads((tmp_path / name).read_text())["c"]["tree"] == 1.0
+
+
+def test_crop_tile_keeps_crs_vlrs_and_gps_time_flag(tmp_path):
+    from evaluation.crop_tiles import crop_tile
+
+    header = laspy.LasHeader(point_format=8, version="1.4")
+    header.global_encoding.gps_time_type = laspy.header.GpsTimeType.STANDARD
+    header.vlrs.append(laspy.VLR("LASF_Projection", 2112, "OGC WKT", b"PROJCS[...]\0"))
+    las = laspy.LasData(header)
+    las.x = [1.0, 5.0, 9.0]
+    las.y = [1.0, 5.0, 9.0]
+    las.z = [0.0, 0.0, 0.0]
+    source = tmp_path / "source.las"
+    las.write(source)
+
+    out = tmp_path / "crop.las"
+    assert crop_tile(source, (4.0, 4.0, 6.0, 6.0), out) == 1
+    cropped = laspy.read(out)
+    assert (
+        cropped.header.global_encoding.gps_time_type
+        == laspy.header.GpsTimeType.STANDARD
+    )
+    assert [
+        (v.user_id, v.record_id) for v in cropped.header.vlrs if v.record_id == 2112
+    ] == [("LASF_Projection", 2112)]
+    assert list(cropped.orig_index) == [1]

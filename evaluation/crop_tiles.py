@@ -55,6 +55,14 @@ def crop_tile(
         )
         out_header.scales = reader.header.scales
         out_header.offsets = reader.header.offsets
+        # Keep CRS, time-format and other source VLRs and the GPS-time/WKT flags;
+        # the extra-bytes VLR is rebuilt by add_extra_dim below.
+        out_header.global_encoding = reader.header.global_encoding
+        out_header.vlrs.extend(
+            v
+            for v in reader.header.vlrs
+            if not isinstance(v, laspy.vlrs.known.ExtraBytesVlr)
+        )
         out_header.add_extra_dim(
             laspy.ExtraBytesParams(
                 name="orig_index",
