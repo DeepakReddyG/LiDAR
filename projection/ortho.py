@@ -16,7 +16,8 @@ Outputs (data/slices/):
     void_mask.npy     (H, W) bool — cells with zero points; labels there are
                       vetoed at fuse time
     tiles/tile_r{row0}_c{col0}.png — 1024×1024 crops, stride 768
-    grid_meta.npz     x_min, y_min, x_max, y_max, resolution, rows, cols
+
+Requires grid_meta.npz from the grid setup stage (bounds, resolution, rows, cols).
 
 HUMAN GATE: ortho_rgb.png must look like an aerial photo.
 """

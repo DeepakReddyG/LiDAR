@@ -9,6 +9,12 @@ import pytest
 from config import LAS_PATH
 
 
+def test_grid_self_check():
+    from projection.grid import _self_check
+
+    _self_check()
+
+
 def test_ground_self_check():
     from projection.ground import _self_check
 

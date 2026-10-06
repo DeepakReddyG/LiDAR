@@ -3,13 +3,14 @@ main.py — LiDAR Point Cloud Classification Pipeline (v2, MANUAL.md)
 
 v2 stages (design: MANUAL.md, build order: strategy.md):
 
+    python main.py --stage grid        # shared grid from LAS header (setup)
     python main.py --stage features    # per-point ExG / intensity / returns
     python main.py --stage ground      # CSF ground filter → DTM → HAG
     python main.py --stage ortho       # RGB nadir ortho + stat grids + tiles
     python main.py --stage segment     # SAM3 text prompts → confidence grids
     python main.py --stage fuse        # thresholds + physics veto → label grid
     python main.py --stage map_back    # Z-aware labels → labelled.las
-    python main.py --stage all         # all six, in order
+    python main.py --stage all         # grid setup, then all six in order
 
     python main.py --stage baseline    # rule-only classifier on eval tiles
     python main.py --stage evaluate --gt <gt.las> --pred <pred.las>
@@ -35,6 +36,13 @@ def _banner(text: str) -> None:
 
 
 # ── v2 stage runners ─────────────────────────────────────────────────────────
+
+
+def run_grid() -> None:
+    _banner("SETUP — grid.py: shared pixel/world grid from LAS header")
+    from projection.grid import run_grid as run
+
+    run()
 
 
 def run_features() -> None:
@@ -102,18 +110,20 @@ def run_map_back() -> None:
 
 # ── CLI ──────────────────────────────────────────────────────────────────────
 
-V2_SEQUENCE = ["features", "ground", "ortho", "segment", "fuse", "map_back"]
+V2_SEQUENCE = ["grid", "features", "ground", "ortho", "segment", "fuse", "map_back"]
 
 STAGES = {
+    "grid": (run_grid, [(LAS_PATH, "LAS input")]),
     "features": (run_features, [(LAS_PATH, "LAS input")]),
     "ground": (
         run_ground,
-        [(LAS_PATH, "LAS input"), (GRID_META_PATH, "grid_meta.npz (run ortho first)")],
+        [(LAS_PATH, "LAS input"), (GRID_META_PATH, "grid_meta.npz (run grid first)")],
     ),
     "ortho": (
         run_ortho,
         [
             (LAS_PATH, "LAS input"),
+            (GRID_META_PATH, "grid_meta.npz (run grid first)"),
             (DERIVED_DIR / "exg.npy", "exg.npy (run features first)"),
             (DERIVED_DIR / "hag.npy", "hag.npy (run ground first)"),
         ],

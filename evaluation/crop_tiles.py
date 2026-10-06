@@ -83,13 +83,13 @@ def main() -> None:
     print(
         "\n"
         "MANUAL STEP — hand-label these tiles in CloudCompare:\n"
-        "  1. Open each data/eval/tile_{a,b,c}.las\n"
-        "  2. Segment tool → assign classification codes per MANUAL §5\n"
-        "     (11=pavement/sidewalk/parking, 3=grass, 5=tree, 6=building,\n"
-        "      64=vehicle, 1=unassigned)\n"
-        "  3. Save as data/eval/tile_{a,b,c}_gt.las\n"
-        "     (CloudCompare may reorder points — that's fine, orig_index\n"
-        "      survives and evaluate.py aligns on it, never file order)\n"
+        "  1. Create a safe copy with evaluation.annotation prepare.\n"
+        "     Keep original tiles outside CloudCompare; large orig_index\n"
+        "     values are rounded on export. Copies over 2^24 points need subdivision.\n"
+        "  2. Segment class parts and export LAS with tile_index retained.\n"
+        "  3. Recover exact orig_index with evaluation.annotation restore.\n"
+        "  4. Assemble restored parts with evaluation.merge_gt_parts.\n"
+        "     See MANUAL §6.0 for commands, class rules, and validation.\n"
     )
 
 

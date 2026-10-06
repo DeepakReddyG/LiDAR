@@ -86,16 +86,34 @@ def majority_filter(grid: np.ndarray, size: int = MAJORITY_FILTER_SIZE) -> np.nd
 
 
 def fuse(
-    conf: dict[str, np.ndarray], exg: np.ndarray, hag: np.ndarray, void: np.ndarray
+    conf: dict[str, np.ndarray],
+    exg: np.ndarray,
+    hag: np.ndarray,
+    void: np.ndarray,
+    *,
+    tree_height_check: bool = False,
+    physical_smoothing: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, dict]:
-    """Pure core: confidence grids → (label_grid, conf_grid, veto_stats)."""
+    """Fuse confidence grids; optionally test height-consistent tree labels.
+
+    The opt-in experiment uses the existing tree height threshold. It rejects
+    low/unknown-height tree claims, and prevents smoothing from restoring them.
+    A rejected smoothed tree reverts to the supported pre-smoothing label,
+    which may be unlabelled. With physical_smoothing, every proposed class must
+    pass its existing physical veto, and smoothing cannot erase a supported
+    label with an unlabelled vote. Rejected proposals retain the pre-smoothing
+    label. Both options are off by default and can be tested independently.
+    """
     shape = next(iter(conf.values())).shape
     label = np.full(shape, -1, dtype=np.int32)
     stats = {}
+    tree_allowed = np.isfinite(hag) & (hag > VETO["tree_hag"]) & ~void
 
     for name in FUSE_PRIORITY:
         claimed = conf[name] >= _THRESH[name]
         kept = claimed & veto_mask(name, exg, hag, void)
+        if tree_height_check and name == "tree":
+            kept &= tree_allowed
         n_claim, n_kept = int(claimed.sum()), int(kept.sum())
         stats[name] = {
             "claimed_px": n_claim,
@@ -104,7 +122,19 @@ def fuse(
         }
         label[(label == -1) & kept] = _NAME_TO_ID[name]
 
+    before_smoothing = label
     label = majority_filter(label)
+    if physical_smoothing:
+        accept = np.zeros(shape, dtype=bool)
+        for name, cid in _NAME_TO_ID.items():
+            allowed = veto_mask(name, exg, hag, void)
+            if tree_height_check and name == "tree":
+                allowed &= tree_allowed
+            accept |= (label == cid) & allowed
+        label = np.where(accept, label, before_smoothing)
+    elif tree_height_check:
+        invalid_tree = (label == _NAME_TO_ID["tree"]) & ~tree_allowed
+        label[invalid_tree] = before_smoothing[invalid_tree]
 
     conf_grid = np.zeros(shape, dtype=np.float32)
     for name, cid in _NAME_TO_ID.items():

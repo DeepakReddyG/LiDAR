@@ -14,6 +14,7 @@ EVAL_DIR = REPO_ROOT / "data/eval"
 OUTPUT_DIR = REPO_ROOT / "data/output"
 
 GRID_META_PATH = SLICES_DIR / "grid_meta.npz"
+GRID_RESOLUTION = 0.5  # US survey feet per pixel
 
 CHUNK_SIZE = 10_000_000
 
@@ -94,6 +95,10 @@ CLASSES = {
     6: {"name": "vehicle", "prompt": "car", "threshold": 0.50, "las_code": 64},
 }
 UNLABELLED_LAS_CODE = 1
+# Applied to ground truth only; unlabelled predictions still count as errors.
+EVAL_IGNORE_GT_CODES = (0, UNLABELLED_LAS_CODE)
+ANNOTATION_MAX_POINTS = 2**24  # tile_index stays exactly representable in float32
+ANNOTATION_XYZ_TOLERANCE = 0.01  # ft; reject moved points or the wrong reference tile
 
 # ── Eval tiles (MANUAL §6.0) ─────────────────────────────────────────────────
 # 150×150 ft boxes picked visually from data/slices/top_down.png

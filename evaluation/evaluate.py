@@ -7,6 +7,10 @@ Classes are keyed by LAS classification code, not by config.py class id:
 pavement/sidewalk/parking share LAS code 11 (no standard LAS code tells them
 apart), so they are necessarily one evaluation bucket regardless of how many
 SAM3 prompts feed into it.
+
+After matching points, GT codes 0 and 1 are excluded from all scoring. An
+unlabelled prediction on annotated GT is still an error. No score is produced
+when none of the matched GT points are annotated.
 """
 
 from __future__ import annotations
@@ -18,7 +22,7 @@ from pathlib import Path
 import laspy
 import numpy as np
 
-from config import CLASSES, UNLABELLED_LAS_CODE
+from config import CLASSES, EVAL_IGNORE_GT_CODES, UNLABELLED_LAS_CODE
 
 
 def _code_names(classes: dict = CLASSES) -> dict[int, str]:
@@ -63,6 +67,16 @@ def evaluate(gt_path: str | Path, pred_path: str | Path) -> dict:
 
     gt_codes = np.asarray(gt.classification)[gi]
     pred_codes = np.asarray(pred.classification)[pi]
+    annotated = ~np.isin(gt_codes, EVAL_IGNORE_GT_CODES)
+    n_scored = int(annotated.sum())
+    n_ignored = n_common - n_scored
+    if n_scored == 0:
+        raise ValueError(
+            "No annotated ground-truth points among matched points "
+            f"(GT codes {EVAL_IGNORE_GT_CODES} are ignored)"
+        )
+    gt_codes = gt_codes[annotated]
+    pred_codes = pred_codes[annotated]
 
     names = _code_names()
     codes = sorted(
@@ -95,6 +109,7 @@ def evaluate(gt_path: str | Path, pred_path: str | Path) -> dict:
     print(
         f"Matched {n_common:,} points ({'orig_index' if has_index else 'XYZ fallback'})"
     )
+    print(f"Scored {n_scored:,} annotated points; ignored {n_ignored:,} GT points")
     print("\nPer-class IoU:")
     for label, v in iou.items():
         print(
@@ -106,7 +121,14 @@ def evaluate(gt_path: str | Path, pred_path: str | Path) -> dict:
     for i, lb in enumerate(labels):
         print(f"{lb[:12]:>14s}" + "".join(f"{conf[i, j]:>14d}" for j in range(n)))
 
-    return {"iou": iou, "confusion_matrix": conf.tolist(), "labels": labels}
+    return {
+        "iou": iou,
+        "confusion_matrix": conf.tolist(),
+        "labels": labels,
+        "matched_points": n_common,
+        "scored_points": n_scored,
+        "ignored_gt_points": n_ignored,
+    }
 
 
 def _pred_from_labels_npy(tile_path: Path, out_path: Path, labels_npy: Path) -> Path:
@@ -182,7 +204,8 @@ def _make_synthetic_las(path: Path, codes: np.ndarray, orig_index: np.ndarray) -
     header.add_extra_dim(laspy.ExtraBytesParams(name="orig_index", type=np.uint32))
     las = laspy.LasData(header)
     n = len(codes)
-    las.x = np.arange(n, dtype=np.float64)
+    # Identity-based coordinates keep shuffled/subset fixtures physically aligned.
+    las.x = orig_index.astype(np.float64)
     las.y = np.zeros(n, dtype=np.float64)
     las.z = np.zeros(n, dtype=np.float64)
     las.classification = codes.astype(np.uint8)

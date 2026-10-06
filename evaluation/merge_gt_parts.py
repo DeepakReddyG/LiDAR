@@ -9,10 +9,12 @@ own file, then let this script stamp the codes.
     data/eval/gt_parts/tile_c_grass.las     -> LAS code 3
     ...                                     -> data/eval/tile_c_gt.las
 
-Points not present in any part stay UNLABELLED_LAS_CODE, so partial labelling
-is valid: unlabelled GT points simply never enter an IoU union.
+Points not present in any part stay UNLABELLED_LAS_CODE. The evaluator ignores
+GT codes 0 and 1 after matching points, so partial labelling is valid. Errors
+on annotated points still count; scores describe only the annotated portion.
 
-Parts are matched to the full tile by orig_index, never by file order.
+First restore CloudCompare exports with evaluation.annotation. Restored parts
+are matched to the full tile by orig_index, never by file order.
 """
 
 from __future__ import annotations
@@ -23,7 +25,7 @@ from pathlib import Path
 import laspy
 import numpy as np
 
-from config import CLASSES, EVAL_DIR, UNLABELLED_LAS_CODE
+from config import ANNOTATION_XYZ_TOLERANCE, CLASSES, EVAL_DIR, UNLABELLED_LAS_CODE
 
 # Part filename suffix -> LAS code. pavement/sidewalk/parking all map to 11,
 # so either name works for a hard-surface cut.
@@ -39,6 +41,9 @@ def merge_gt_parts(
     tile_path = eval_dir / f"tile_{tile}.las"
     if not tile_path.exists():
         raise SystemExit(f"{tile_path} missing — run evaluation/crop_tiles.py first")
+    out = eval_dir / f"tile_{tile}_gt.las"
+    if out.exists():
+        raise FileExistsError(f"Refusing to overwrite existing ground truth: {out}")
 
     parts = sorted(parts_dir.glob(f"tile_{tile}_*.las"))
     if not parts:
@@ -51,6 +56,10 @@ def merge_gt_parts(
     if "orig_index" not in las.point_format.dimension_names:
         raise SystemExit(f"{tile_path} has no orig_index — recrop with crop_tiles.py")
     tile_idx = np.asarray(las.orig_index)
+    if not len(tile_idx):
+        raise ValueError("Reference tile contains no points")
+    if len(np.unique(tile_idx)) != len(tile_idx):
+        raise ValueError("Reference tile has duplicate orig_index values")
     order = np.argsort(tile_idx)
 
     codes = np.full(len(tile_idx), UNLABELLED_LAS_CODE, np.uint8)
@@ -64,10 +73,12 @@ def merge_gt_parts(
         p = laspy.read(part)
         if "orig_index" not in p.point_format.dimension_names:
             raise SystemExit(
-                f"{part.name} lost orig_index on export — re-save from CloudCompare "
-                f"keeping the extra dimension, or the GT cannot be aligned"
+                f"{part.name} has no orig_index — run evaluation.annotation restore "
+                "on the CloudCompare export before merging"
             )
         p_idx = np.asarray(p.orig_index)
+        if len(np.unique(p_idx)) != len(p_idx):
+            raise ValueError(f"{part.name}: duplicate orig_index values")
 
         # Locate each part point in the tile by orig_index (sorted searchsorted).
         pos = np.searchsorted(tile_idx, p_idx, sorter=order)
@@ -75,18 +86,33 @@ def merge_gt_parts(
         hit = order[pos]
         found = tile_idx[hit] == p_idx
         if not found.all():
-            print(f"  [warn] {part.name}: {(~found).sum():,} points not in tile")
+            raise ValueError(
+                f"{part.name}: {(~found).sum():,} IDs not in reference tile"
+            )
+
+        for dim in ("x", "y", "z"):
+            if not np.allclose(
+                np.asarray(getattr(las, dim))[hit],
+                np.asarray(getattr(p, dim)),
+                rtol=0,
+                atol=ANNOTATION_XYZ_TOLERANCE,
+            ):
+                raise ValueError(f"{part.name}: coordinates disagree with orig_index")
 
         target = hit[found]
         clash = (codes[target] != UNLABELLED_LAS_CODE) & (codes[target] != code)
         if clash.any():
-            print(f"  [warn] {part.name}: {clash.sum():,} points overlap another part")
+            raise ValueError(
+                f"{part.name}: {clash.sum():,} points have conflicting classes"
+            )
         codes[target] = code
         print(f"  {part.name:<34s} -> code {code:<3d} {found.sum():>10,} points")
 
     las.classification = codes
-    out = eval_dir / f"tile_{tile}_gt.las"
-    las.write(str(out))
+    if not np.any(codes != UNLABELLED_LAS_CODE):
+        raise ValueError("No annotated points found in recognized class parts")
+    with out.open("xb") as stream:
+        las.write(stream)
 
     labelled = (codes != UNLABELLED_LAS_CODE).sum()
     print(
