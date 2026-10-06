@@ -91,6 +91,40 @@ This covers every stage except `segment`, which needs a second, separately-manag
 
 ---
 
+## Try It on the Demo Tile
+
+`demo/tile_road_demo.las` is a small 100 × 100 ft piece of the survey (road,
+parking, cars, grass, trees; about 1 million points, 43 MB). Setting
+`LIDAR_LAS` points the pipeline at it; outputs go to
+`data/runs/tile_road_demo/`.
+
+macOS on Apple Silicon (full pipeline, SAM3 backend running in a second terminal):
+
+```bash
+export LIDAR_LAS=demo/tile_road_demo.las
+python main.py --stage all
+```
+
+Windows and Linux: the SAM3 backend uses Apple's MLX, so the `segment` stage
+needs an Apple Silicon Mac. Every other stage runs anywhere. Use the SAM3
+results saved in `demo/sam3_masks/` instead:
+
+```bash
+# Windows PowerShell: $env:LIDAR_LAS = "demo\tile_road_demo.las"
+export LIDAR_LAS=demo/tile_road_demo.las
+python main.py --stage grid
+python main.py --stage features
+python main.py --stage ground
+python main.py --stage ortho
+python -c "import shutil; shutil.copytree('demo/sam3_masks', 'data/runs/tile_road_demo/masks', dirs_exist_ok=True)"
+python main.py --stage fuse
+python main.py --stage map_back
+```
+
+The result is `data/runs/tile_road_demo/output/labelled.las`; open it in CloudCompare.
+
+---
+
 ## Running the Pipeline
 
 ```bash

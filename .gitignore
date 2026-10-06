@@ -6,6 +6,7 @@ __pycache__/
 *.pyd
 .DS_Store
 *.las
+!demo/*.las
 
 # Generated LiDAR data
 data/masks/*.npy
@@ -59,3 +60,6 @@ data/output/labelled_points.npz
 AGENTS.md
 CLAUDE.md
 .claude/
+
+# Per-tile pipeline runs (LIDAR_LAS=...)
+data/runs/

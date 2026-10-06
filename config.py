@@ -1,17 +1,25 @@
 """config.py — every path, prompt, threshold, and veto rule. No constants
 duplicated across modules (MANUAL §4, §6.7)."""
 
+import os
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent
 
-LAS_PATH = REPO_ROOT / "data/raw/UPark_Merged_PS_NAD83_G18_USFT_las.las"
+# LIDAR_LAS points the pipeline at another LAS (e.g. the demo tile); its outputs
+# then go to data/runs/<file name>/ so the full-survey outputs are untouched.
+if os.environ.get("LIDAR_LAS"):
+    LAS_PATH = Path(os.environ["LIDAR_LAS"]).resolve()
+    DATA_DIR = REPO_ROOT / "data/runs" / LAS_PATH.stem
+else:
+    LAS_PATH = REPO_ROOT / "data/raw/UPark_Merged_PS_NAD83_G18_USFT_las.las"
+    DATA_DIR = REPO_ROOT / "data"
 
-DERIVED_DIR = REPO_ROOT / "data/derived"
-SLICES_DIR = REPO_ROOT / "data/slices"
-MASKS_DIR = REPO_ROOT / "data/masks"
-EVAL_DIR = REPO_ROOT / "data/eval"
-OUTPUT_DIR = REPO_ROOT / "data/output"
+DERIVED_DIR = DATA_DIR / "derived"
+SLICES_DIR = DATA_DIR / "slices"
+MASKS_DIR = DATA_DIR / "masks"
+EVAL_DIR = DATA_DIR / "eval"
+OUTPUT_DIR = DATA_DIR / "output"
 
 GRID_META_PATH = SLICES_DIR / "grid_meta.npz"
 GRID_RESOLUTION = 0.5  # US survey feet per pixel
