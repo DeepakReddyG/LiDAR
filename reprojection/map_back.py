@@ -109,14 +109,18 @@ def prediction_header(source_header):
     A collision is refused even for an apparently compatible dtype: silently
     replacing an existing source attribute would lose its original meaning.
     """
-    collisions = set(source_header.point_format.dimension_names) & set(PREDICTION_DIMENSIONS)
+    collisions = set(source_header.point_format.dimension_names) & set(
+        PREDICTION_DIMENSIONS
+    )
     if collisions:
         raise ValueError(f"Prediction dimension collision: {sorted(collisions)}")
     header = source_header.copy()
-    header.add_extra_dims([
-        laspy.ExtraBytesParams(name=name, type=dtype, description=description)
-        for name, (dtype, description) in PREDICTION_DIMENSIONS.items()
-    ])
+    header.add_extra_dims(
+        [
+            laspy.ExtraBytesParams(name=name, type=dtype, description=description)
+            for name, (dtype, description) in PREDICTION_DIMENSIONS.items()
+        ]
+    )
     return header
 
 
@@ -182,7 +186,9 @@ def run_map_back() -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     out_path = OUTPUT_DIR / "labelled.las"
     if out_path.exists() or (OUTPUT_DIR / "labels.npy").exists():
-        raise FileExistsError("Preserve previous predictions; use a new output directory or archive them explicitly")
+        raise FileExistsError(
+            "Preserve previous predictions; use a new output directory or archive them explicitly"
+        )
 
     with laspy.open(LAS_PATH) as reader:
         n_pts = reader.header.point_count
@@ -216,7 +222,9 @@ def run_map_back() -> None:
                     np.asarray(exg_pts[off : off + n]),
                 )
 
-                writer.write_points(prediction_records(ch, out_header, labels, scores, sources))
+                writer.write_points(
+                    prediction_records(ch, out_header, labels, scores, sources)
+                )
 
                 all_labels[off : off + n] = labels
                 for cid in counts:

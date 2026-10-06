@@ -1,6 +1,6 @@
 # Reproducible bounded revision — September 23, 2026
 
-Start with [`../research_paper_documents_and_drafts/results_summary.md`](../research_paper_documents_and_drafts/results_summary.md). The branch is `revision/2026-09-23`, created from `exp` with inherited working-tree changes preserved. Source snapshots separate inherited code from the corrected run. Historical outputs and failed integration attempts remain in `archive/`.
+The paper drafts, generated figures and annotation packages are kept outside this repository; paths below under `../research_paper_documents_and_drafts/` refer to that local folder. The branch is `revision/2026-09-23`, created from `exp` with inherited working-tree changes preserved. Source snapshots separate inherited code from the corrected run. Historical outputs and failed integration attempts remain in `archive/`.
 
 ## Scope and safeguards
 

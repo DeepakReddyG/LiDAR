@@ -46,3 +46,16 @@ data/output/labelled_points.npz
 
 # stray virtualenv
 .env/
+
+# Local professor meeting packets and supporting documents
+/docs/
+
+# Consolidated local research drafts and supporting resources
+/research_paper_documents_and_drafts/
+.claude/changelog.md
+
+# Local-only notes, drafts and agent files (not part of the public repo)
+/_private/
+AGENTS.md
+CLAUDE.md
+.claude/

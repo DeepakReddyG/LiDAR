@@ -12,7 +12,17 @@ The pipeline:
 
 It is intended as a research-oriented prototype for intelligent LiDAR scene understanding in civil engineering and infrastructure applications.
 
-**For the authoritative pipeline specification** (stage-by-stage design, class set, thresholds, data contracts), see [`MANUAL.md`](MANUAL.md). For the build history and AI-collaboration playbook, see [`strategy.md`](strategy.md). This README is a project summary and quick-start guide, not the spec — if this file and `MANUAL.md` ever disagree, `MANUAL.md` is authoritative.
+**For the authoritative pipeline specification** (stage-by-stage design, class set, thresholds, data contracts), see [`MANUAL.md`](MANUAL.md). This README is a project summary and quick-start guide, not the spec — if this file and `MANUAL.md` ever disagree, `MANUAL.md` is authoritative.
+
+---
+
+## For Reviewers
+
+- **Pipeline code:** `main.py` and the stage packages (`projection/`, `segmentation/`, `classification/`, `reprojection/`, `evaluation/`). All settings live in `config.py`. The design is in [`MANUAL.md`](MANUAL.md).
+- **Experiments behind the paper:** `revision/` holds the experiment code. [`revision_work/`](revision_work/README.md) holds the run manifests, metric evidence and audit records. `holdout.json` and `objective.md` were committed before any model run, as the preregistered held-out regions and objective.
+- **Current evidence:** this is a development pilot on one 40 × 30 ft region of tile C (158,618 reviewed points, tree and grass). The SAM3 pipeline made 5,215 errors and the rule-only baseline made 5,917. No independent held-out evaluation has been run yet. See [`CHANGELOG.md`](CHANGELOG.md) and `revision_work/evidence/`.
+- **Data:** the raw LAS survey (~16 GB) and the SAM3 checkpoint are not in this repository.
+- **Tests:** `python -m pytest -q tests` runs on synthetic data and needs no survey files.
 
 ---
 
@@ -38,7 +48,10 @@ Raw point cloud data is difficult to process directly due to massive data size, 
 
 ## The Pipeline (Shipped)
 
-The pipeline is a six-stage CLI driven entirely by `config.py`:
+The pipeline is a six-stage CLI driven entirely by `config.py`, preceded by
+`grid` setup: derive the shared pixel/world mapping from the LAS header at
+`GRID_RESOLUTION` (default 0.5 US survey feet per pixel). Matching grid metadata
+is preserved; conflicting metadata stops the run before processing.
 
 1. **`features`** — per-point spectral features (ExG vegetation index, intensity, returns)
 2. **`ground`** — CSF ground filter → DTM → per-point Height Above Ground
@@ -86,6 +99,7 @@ cd segmentation/mlx_sam3 && uv run python app/backend/main.py
 
 # then, from the repo root, in the main .venv:
 python main.py --stage all                # run the full 6-stage pipeline
+python main.py --stage grid               # initialize/validate the shared grid
 python main.py --stage features           # or run a single stage
 python main.py --stage ground
 python main.py --stage ortho
@@ -95,9 +109,28 @@ python main.py --stage map_back
 
 python main.py --stage baseline           # rule-only classifier on eval tiles
 python main.py --stage evaluate --gt <gt.las> --pred <pred.las>
+python main.py --stage evaluate_all       # score available GT tiles vs both methods
 ```
 
 Each stage checks its own prerequisites (per `main.py`'s `STAGES` table) and fails fast with a clear message naming the missing file if you run stages out of order.
+
+`all` runs grid setup first, so no metadata from an earlier run is required.
+When running stages individually, run `grid` before `ground` and `ortho`.
+
+Evaluation supports partial annotation: matched ground-truth points with LAS
+codes 0 or 1 are excluded from both IoU and the confusion matrix. Unlabelled
+predictions on annotated ground truth still count as errors. The evaluator
+reports matched, scored, and ignored point counts, and refuses to score a tile
+with no annotated matches. Scores describe only the annotated portion; they do
+not establish accuracy on the rest of the tile or survey.
+
+For CloudCompare annotation, first create a safe copy with
+`python -m evaluation.annotation prepare --reference data/eval/tile_c.las --output docs/annotation_pilot/prepared/tile_c_annotation.las`.
+The original tile stays authoritative. CloudCompare rounds large `orig_index`
+values in this dataset; keep the prepared copy's small `tile_index` field during
+export, then run `evaluation.annotation restore` before `evaluation.merge_gt_parts`.
+See [MANUAL §6.0](MANUAL.md#60-evaluationevaluatepy--build-first-1-day) for the
+complete workflow. Preparation and restoration refuse to overwrite files.
 
 ---
 
